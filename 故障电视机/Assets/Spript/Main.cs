@@ -19,6 +19,11 @@ public class Main : MonoBehaviour
 
     void Start()
     {
+        //初始化音乐管理器
+        MusicManager.Instance.InitEffectMusic();
+        //有了音乐管理器就可以播放背景音乐了
+        //MusicManager.Instance.PlayerBKmusic("Audio/BKMusic");
+
         //呼唤ui，目前只有电视机这一个面板所以就先呼出这个面板
         UImanager.Instance.ShowPanel<televisionPanel>();
     }

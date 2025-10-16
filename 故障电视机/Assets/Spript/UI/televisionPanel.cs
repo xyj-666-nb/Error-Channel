@@ -22,7 +22,40 @@ public class televisionPanel : BasePanel
             case "GetCardButton":
                 HandCardManger.Instance.CreatCard();//创建卡牌
                 break;
-        
+            case "PushCardButton":
+                HandCardManger.Instance.PushCard(PushType.track);//打出卡牌
+                break;
+                case "AdvanceButton":
+                if (UImanager.Instance.GetPanel<AdvanceShopPanel>())
+                {
+                    controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Advance Shop";
+                    UImanager.Instance.HidePanel<AdvanceShopPanel>();//隐藏高级商店
+                }
+                else
+                {
+                    controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Close";
+                    if (UImanager.Instance.GetPanel<FixShopPanel>())
+                        UImanager.Instance.HidePanel<FixShopPanel>();//隐藏高级商店
+                    UImanager.Instance.ShowPanel<AdvanceShopPanel>();//显示高级商店
+                }
+               
+                break;
+            case "FixShopButton":
+                if (UImanager.Instance.GetPanel<FixShopPanel>())
+                {
+                    controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Fix Shop";
+                    UImanager.Instance.HidePanel<FixShopPanel>();//隐藏高级商店
+                }
+                else
+                {
+                    controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Close";
+                    if(UImanager.Instance.GetPanel<AdvanceShopPanel>())
+                        UImanager.Instance.HidePanel<AdvanceShopPanel>();//隐藏高级商店
+                    UImanager.Instance.ShowPanel<FixShopPanel>();//显示高级商店
+                }
+                break;
+            case "ExitButton":
+                break;
         }
 
     }

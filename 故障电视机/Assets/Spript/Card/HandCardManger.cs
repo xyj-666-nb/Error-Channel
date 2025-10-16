@@ -4,6 +4,9 @@ using UnityEngine.Splines;
 using DG.Tweening;
 using System.Collections;//引入dotween插件
 
+public enum PushType { Touch,track }//1.是玩家触摸，2.是预设轨迹
+
+
 public class HandCardManger : MonoBehaviour
 {
     private static HandCardManger instance;
@@ -13,7 +16,9 @@ public class HandCardManger : MonoBehaviour
     [SerializeField] private List<GameObject> HandCardList = new List<GameObject>();//手牌列表
     [SerializeField] private GameObject HandCarPrefabs;//手牌预制体
     [SerializeField] private Transform spawnPoint;//手牌生成点,也就是起始位置
-    [SerializeField] private SplineContainer SplineContainer;//spline插件里面的容器
+    [SerializeField] private SplineContainer SplineContainer_getCard;//spline插件里面的容器，这里是卡牌的初始轨道
+    [SerializeField]private SplineContainer SplineContainer_PushCard;//这里是打出卡牌的轨道
+
     [SerializeField]private Transform CardParent;//卡牌的父物体
 
     private void Awake()
@@ -34,6 +39,79 @@ public class HandCardManger : MonoBehaviour
         UpdateCardPosition();//调用更新2
     }
 
+    public void PushCard(PushType Type)
+    {
+        if (Card.CurrentSelectedCard == null)
+            return;
+
+        // 缓存当前选中的卡牌
+        Card pushedCard = Card.CurrentSelectedCard;
+
+        switch (Type)
+        {
+            case PushType.Touch:
+                break;
+            case PushType.track:
+                MovePushCard(pushedCard);
+                break;
+        }
+
+        pushedCard.Push();// 标记卡牌已打出
+        HandCardList.Remove(pushedCard.gameObject);
+        UpdateCardPosition();
+        Card.CurrentSelectedCard = null;
+    }
+
+    public void MovePushCard(Card TargetCard)
+    {
+        Spline trackSpline = SplineContainer_PushCard.Spline; // 获取曲线
+        BezierKnot knot = trackSpline[0]; // 获取第一个节点
+
+        // 将卡牌的世界坐标转换为曲线所在对象的局部坐标
+        Vector3 cardWorldPos = TargetCard.transform.position;
+        Vector3 curveLocalPos = SplineContainer_PushCard.transform.InverseTransformPoint(cardWorldPos);
+
+        knot.Position = curveLocalPos; // 赋值转换后的局部坐标
+        trackSpline.SetKnot(0, knot); // 写回曲线
+
+        StartCoroutine(MoveCard(TargetCard)); // 启动移动协程
+    }
+    IEnumerator MoveCard(Card card)
+    {
+        // 终止卡牌上所有残留的DOTween动画
+        card.transform.DOKill();
+
+        Transform splineContainerTrans = SplineContainer_PushCard.transform;
+        Spline spline = SplineContainer_PushCard.Spline;
+
+        float totalDuration = 0.3f; // 总移动时间
+        float elapsedTime = 0f;   // 已流逝时间
+
+        while (elapsedTime < totalDuration)
+        {
+            // 计算当前进度 t
+            float t = elapsedTime / totalDuration;
+            // 计算曲线上的位置
+            Vector3 localPos = spline.EvaluatePosition(t);
+            Vector3 worldPos = splineContainerTrans.TransformPoint(localPos);
+
+            // 直接设置位置
+            card.transform.position = worldPos;
+            yield return null;
+            // 累加时间
+            //给出一个加速的效果
+            var AddTime = Time.deltaTime * (1 + (elapsedTime / totalDuration));//时间越往后加速越快，最大100%
+            elapsedTime += AddTime;
+            if( elapsedTime > totalDuration)
+            {
+                elapsedTime = totalDuration;//防止超出时间
+            }
+        }
+
+        Vector3 finalPos = splineContainerTrans.TransformPoint(spline.EvaluatePosition(1f));
+        card.transform.position = finalPos;
+    }
+
     private void UpdateCardPosition()//更新卡牌的位置
     {
         if (HandCardList.Count <= 0)
@@ -48,12 +126,12 @@ public class HandCardManger : MonoBehaviour
         for (int i = 0; i < HandCardList.Count;i++)
         {
             float StartPos = FirstCardPos + step * i;//计算每张卡牌的位置
-            Vector3 localSplinePos = SplineContainer.Spline.EvaluatePosition(StartPos); // 1. 先获取曲线在自身局部空间的位置
+            Vector3 localSplinePos = SplineContainer_getCard.Spline.EvaluatePosition(StartPos); // 1. 先获取曲线在自身局部空间的位置
             // 2. 通过 SplineContainer 的 transform，将局部位置转换为世界位置
-            Vector3 worldSplinePos = SplineContainer.transform.TransformPoint(localSplinePos);
+            Vector3 worldSplinePos = SplineContainer_getCard.transform.TransformPoint(localSplinePos);
 
-            UnityEngine.Vector3 forWard = SplineContainer.Spline.EvaluateTangent(StartPos);//获取卡牌在曲线上的切线方向
-            UnityEngine.Vector3 Up = SplineContainer.Spline.EvaluateUpVector(StartPos);//获取卡牌在曲线上的上方向
+            UnityEngine.Vector3 forWard = SplineContainer_getCard.Spline.EvaluateTangent(StartPos);//获取卡牌在曲线上的切线方向
+            UnityEngine.Vector3 Up = SplineContainer_getCard.Spline.EvaluateUpVector(StartPos);//获取卡牌在曲线上的上方向
             UnityEngine.Quaternion rot = UnityEngine.Quaternion.LookRotation(Up,UnityEngine.Vector3.Cross(Up,forWard).normalized);//计算卡牌的旋转
             //利用插件Dotween来移动卡片
             HandCardList[i].transform.DOMove(worldSplinePos, 0.5f);//移动位置
@@ -62,6 +140,7 @@ public class HandCardManger : MonoBehaviour
             HandCardList[i].transform.DORotateQuaternion(rot, 0.5f);//旋转
             //打开协程
             StartCoroutine(WaitTime(card, worldSplinePos));//告诉卡片播放完毕
+
         }
 
     }
