@@ -8,9 +8,13 @@ using UnityEngine.UI;
 
 public class televisionPanel : BasePanel
 {
+     public Image RecycleArea;//回收区域图片
+    public Image pushCardArea;//打出卡牌区域图片
     public override void Awake()
     {
         base.Awake();
+        //最开始设置回收区域
+        RecycleArea.color = new Color(RecycleArea.color.r, RecycleArea.color.g, RecycleArea.color.b, 0.4f);//设置为半透明
     }
 
     public override void ClickButton(string controlName)
@@ -97,5 +101,23 @@ public class televisionPanel : BasePanel
         transform.DOKill();//先停止之前的动画
         GetCardButton.GetComponent<Image>().DOColor(TargetColor,0.5f);//渐变颜色
         GetCardButton.GetComponentInChildren<TextMeshProUGUI>().DOColor(TargetColor, 0.5f);//渐变颜色
+    }
+
+    public void SetRecycleAreaActive(bool IsActive)
+    {
+        Color color = RecycleArea.color;
+        if (IsActive)
+            RecycleArea.DOColor(new Color(color.r, color.g, color.b, 1f), 0.5f); // 高亮
+        else
+            RecycleArea.DOColor(new Color(color.r, color.g, color.b, 0.4f), 0.5f); // 半透明
+    }
+
+    public void SetpushCardAreaActive(bool IsActive)
+    {
+        Color color = RecycleArea.color;
+        if (IsActive)
+            pushCardArea.DOColor(new Color(color.r, color.g, color.b, 1f), 0.3f); // 高亮
+        else
+            pushCardArea.DOColor(new Color(color.r, color.g, color.b, 0.4f), 0.3f); // 半透明
     }
 }

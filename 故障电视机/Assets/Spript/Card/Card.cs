@@ -33,7 +33,6 @@ public class Card : MonoBehaviour
     private bool IsUp = false;//是否已经抬起
     private bool IsDrag = false;//是否正在拖动
     private Coroutine judgeClickCoroutine; // 协程引用，用于停止协程
-
     private void Awake()
     {
         SetSortingLayer(SortingLayerType.Card);
@@ -50,6 +49,9 @@ public class Card : MonoBehaviour
     public void Push()
     {
         IsPushed = true;
+
+        //更改标签
+          this.gameObject.tag = "Default";
     }
 
     public void SetOriginalPos(Vector3 pos)//设置卡牌的初始位置
@@ -107,11 +109,12 @@ public class Card : MonoBehaviour
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0; // 保持z轴不变
         transform.position = mousePos;
-    }
 
+    }
+  
     IEnumerator JudgeClick()
     {
-        float JudgeTime = 0.2f;
+        float JudgeTime = 0.1f;
         float timer = 0f;
 
         while (timer < JudgeTime)
@@ -150,6 +153,20 @@ public class Card : MonoBehaviour
         // 如果是拖动状态，归位到激活状态的位置
         if (IsDrag)
         {
+            //判断当前的push区域是否激活，如果存在激活就进行Push
+            if (AiCardArea.Instance.IsTrigger == true)
+            {
+                AiCardArea.Instance.PushCard(this);
+                return;
+            }
+
+            //如果这时候的回收区域打开就进行回收
+            if (RecycleArea.Instance.IsTrigger)
+            {
+                RecycleArea.Instance.RecycleCard(this);
+                return;
+            }
+
             ReturnToActivatedPosition();
         }
         else

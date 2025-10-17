@@ -16,7 +16,7 @@ GameObject:
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: Card
-  m_TagString: Untagged
+  m_TagString: Card
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

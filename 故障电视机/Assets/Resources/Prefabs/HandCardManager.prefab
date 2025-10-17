@@ -133,6 +133,159 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
+--- !u!1 &1992372715691308072
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 8090426134823511781}
+  - component: {fileID: 5664705081223477773}
+  m_Layer: 0
+  m_HasEditorInfo: 1
+  m_Name: EnemyCardSpline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8090426134823511781
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1992372715691308072}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 8.85, y: 10.24, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2325557908536639548}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5664705081223477773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1992372715691308072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab5c7d4c32e743048dfca98e2d5914f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Spline:
+    m_EditModeType: 1
+    m_Knots: []
+    m_MetaData: []
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  m_Splines:
+  - m_EditModeType: 1
+    m_Knots:
+    - Position:
+        x: -2.4720845
+        y: 2.0530577
+        z: 0.07
+      TangentIn:
+        x: -0
+        y: -0
+        z: -0.34256384
+      TangentOut:
+        x: 0
+        y: 0
+        z: 0.34256384
+      Rotation:
+        value:
+          x: 0.0933928
+          y: 0.71431947
+          z: -0.6906978
+          w: -0.06294452
+    - Position:
+        x: -3.2220848
+        y: -1.286942
+        z: -0.06
+      TangentIn:
+        x: -0
+        y: -0
+        z: -0.86079043
+      TangentOut:
+        x: 0
+        y: 0
+        z: 0.59860796
+      Rotation:
+        value:
+          x: -0.10943712
+          y: -0.5694499
+          z: 0.7991097
+          w: 0.1586633
+    - Position:
+        x: -3.9420848
+        y: -2.3369422
+        z: 1
+      TangentIn:
+        x: -0
+        y: -0
+        z: -0.49710345
+      TangentOut:
+        x: 0
+        y: 0
+        z: 0.61443806
+      Rotation:
+        value:
+          x: -0.3842164
+          y: 0.52652895
+          z: -0.47222856
+          w: -0.5934184
+    - Position:
+        x: -3.9220846
+        y: -4.661942
+        z: 0
+      TangentIn:
+        x: 0
+        y: 0
+        z: -0.06613079
+      TangentOut:
+        x: 0
+        y: 0
+        z: 0.06613079
+      Rotation:
+        value:
+          x: -0.4839715
+          y: 0.51572424
+          z: -0.4840857
+          w: -0.51522917
+    m_MetaData:
+    - Mode: 0
+      Tension: 0.5
+    - Mode: 0
+      Tension: 0.5
+    - Mode: 0
+      Tension: 0.5
+    - Mode: 2
+      Tension: 0.5
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  m_Knots:
+    m_KnotsLink: []
 --- !u!1 &2471026996403502871
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,6 +486,7 @@ Transform:
   - {fileID: 747475292845903627}
   - {fileID: 8730297416485075271}
   - {fileID: 4714346530548778848}
+  - {fileID: 8090426134823511781}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8361271469890798663
@@ -354,6 +508,8 @@ MonoBehaviour:
   SplineContainer_getCard: {fileID: 7678275773905645984}
   SplineContainer_PushCard: {fileID: 7571017623760236680}
   CardParent: {fileID: 8730297416485075271}
+  SplineContainer_PushEnemyCard: {fileID: 5664705081223477773}
+  EnemyCard: {fileID: 466015306969171052, guid: a51f88e6f3b0aec4fa0e2a34d524d0d3, type: 3}
 --- !u!1 &8483485539481621226
 GameObject:
   m_ObjectHideFlags: 0

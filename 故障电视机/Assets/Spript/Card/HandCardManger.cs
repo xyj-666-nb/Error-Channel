@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Splines;
 using DG.Tweening;
-using System.Collections;//引入dotween插件
+using System.Collections;
+using System.Diagnostics.Contracts;//引入dotween插件
 
 public enum PushType { Touch,track }//1.是玩家触摸，2.是预设轨迹
 
@@ -13,7 +14,7 @@ public class HandCardManger : MonoBehaviour
     public static HandCardManger Instance => instance;//单例模式
 
     [SerializeField]private int MaxHandCardCount = 10;//最大手牌数量
-    [SerializeField] private List<GameObject> HandCardList = new List<GameObject>();//手牌列表
+    public List<GameObject> HandCardList = new List<GameObject>();//手牌列表
     [SerializeField] private GameObject HandCarPrefabs;//手牌预制体
     [SerializeField] private Transform spawnPoint;//手牌生成点,也就是起始位置
     [SerializeField] private SplineContainer SplineContainer_getCard;//spline插件里面的容器，这里是卡牌的初始轨道
@@ -24,6 +25,17 @@ public class HandCardManger : MonoBehaviour
     private void Awake()
     {
         instance = this;
+    }
+
+    private void OnGUI()//测试
+    {
+        // 只加大按钮大小：宽200，高60（可根据需要调整数值）
+        if (GUILayout.Button("创建敌人牌",
+            GUILayout.Width(200),  // 按钮宽度
+            GUILayout.Height(60))) // 按钮高度
+        {
+            GetEnemyCard();
+        }
     }
 
     public void CreatCard()
@@ -52,7 +64,7 @@ public class HandCardManger : MonoBehaviour
             case PushType.Touch:
                 break;
             case PushType.track:
-                MovePushCard(pushedCard);
+                PushPlayerCard(pushedCard,0.3f);
                 break;
         }
 
@@ -62,29 +74,31 @@ public class HandCardManger : MonoBehaviour
         Card.CurrentSelectedCard = null;
     }
 
-    public void MovePushCard(Card TargetCard)
+    public void PushPlayerCard(Card card,float _totalDuration)
     {
         Spline trackSpline = SplineContainer_PushCard.Spline; // 获取曲线
         BezierKnot knot = trackSpline[0]; // 获取第一个节点
 
-        // 将卡牌的世界坐标转换为曲线所在对象的局部坐标
-        Vector3 cardWorldPos = TargetCard.transform.position;
+        // 将对象的世界坐标转换为曲线所在对象的局部坐标
+        Vector3 cardWorldPos = card.transform.position;
         Vector3 curveLocalPos = SplineContainer_PushCard.transform.InverseTransformPoint(cardWorldPos);
 
         knot.Position = curveLocalPos; // 赋值转换后的局部坐标
         trackSpline.SetKnot(0, knot); // 写回曲线
 
-        StartCoroutine(MoveCard(TargetCard)); // 启动移动协程
+        StartCoroutine(MoveCard(card.transform, SplineContainer_PushCard, _totalDuration)); // 启动移动协程
     }
-    IEnumerator MoveCard(Card card)
+
+    //让物体沿着曲线移动的通用协程
+    IEnumerator MoveCard(Transform _transform, SplineContainer SplineTrack,float _totalDuration)
     {
         // 终止卡牌上所有残留的DOTween动画
-        card.transform.DOKill();
+        _transform.DOKill();
 
-        Transform splineContainerTrans = SplineContainer_PushCard.transform;
-        Spline spline = SplineContainer_PushCard.Spline;
+        Transform splineContainerTrans = SplineTrack.transform;
+        Spline spline = SplineTrack.Spline;
 
-        float totalDuration = 0.3f; // 总移动时间
+        float totalDuration = _totalDuration; // 总移动时间
         float elapsedTime = 0f;   // 已流逝时间
 
         while (elapsedTime < totalDuration)
@@ -96,7 +110,7 @@ public class HandCardManger : MonoBehaviour
             Vector3 worldPos = splineContainerTrans.TransformPoint(localPos);
 
             // 直接设置位置
-            card.transform.position = worldPos;
+            _transform.position = worldPos;
             yield return null;
             // 累加时间
             //给出一个加速的效果
@@ -109,10 +123,10 @@ public class HandCardManger : MonoBehaviour
         }
 
         Vector3 finalPos = splineContainerTrans.TransformPoint(spline.EvaluatePosition(1f));
-        card.transform.position = finalPos;
+        _transform.position = finalPos;
     }
 
-    private void UpdateCardPosition()//更新卡牌的位置
+    public void UpdateCardPosition()//更新卡牌的位置
     {
         if (HandCardList.Count <= 0)
             return;//如果手牌数量小于等于0，直接返回
@@ -151,5 +165,19 @@ public class HandCardManger : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         Card.IsAnimator = false;//动画播放完毕
         Card.SetOriginalPos(Pos);//设置卡牌的初始位置
+    }
+
+    //——————————给出敌人牌组——————————
+    [Space(10)]
+    [SerializeField] private SplineContainer SplineContainer_PushEnemyCard;//这里是敌人卡牌的的轨道
+    public GameObject EnemyCard;//敌人卡牌预制体
+
+    public void GetEnemyCard()//得到一张敌人牌
+    {
+       GameObject EnemyCardObj= PoolManage.Instance.GetObj(EnemyCard);//通过对象池获取卡牌
+        //设置父对象
+        EnemyCardObj.transform.parent = CardParent;
+        EnemyCardObj.transform.position = SplineContainer_PushEnemyCard.Spline[0].Position;//设置初始位置
+        StartCoroutine(MoveCard(EnemyCardObj.transform, SplineContainer_PushEnemyCard, 0.3f)); // 启动移动协程
     }
 }
