@@ -16,10 +16,8 @@ public class VoicevolumeButton : MonoBehaviour
     private Camera mainCamera;
     private bool isDragging = false;
 
-    private bool IsCheck;
     private void Awake()
     {
-        IsCheck = false;
         // 获取主相机
         mainCamera = Camera.main;
 
@@ -30,11 +28,6 @@ public class VoicevolumeButton : MonoBehaviour
         collider=GetComponent<CircleCollider2D>();
     }
 
-    private void Start()
-    {
-        me.onClick.AddListener(() => { IsCheck = true; });
-    }
-
     private void Update()
     {
         HandleTouchInput();
@@ -42,8 +35,6 @@ public class VoicevolumeButton : MonoBehaviour
 
     private void HandleTouchInput()
     {
-        if(!IsCheck)//如果没有开启检测就不用检测点击
-
         // 只要一个个触碰点触发了
         if (Touch.fingers[0].isActive)
         {
@@ -131,7 +122,6 @@ public class VoicevolumeButton : MonoBehaviour
     {
         EnhancedTouchSupport.Disable();
         isDragging = false;
-        IsCheck=false;
     }
 
     // 获取当前旋转角度（0-360度）

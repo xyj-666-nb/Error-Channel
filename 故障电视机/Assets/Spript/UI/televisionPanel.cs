@@ -34,8 +34,7 @@ public class televisionPanel : BasePanel
                 else
                 {
                     controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Close";
-                    if (UImanager.Instance.GetPanel<FixShopPanel>())
-                        UImanager.Instance.HidePanel<FixShopPanel>();//隐藏高级商店
+                    CloseShop<FixShopPanel>("Fix Shop", "FixShopButton");
                     UImanager.Instance.ShowPanel<AdvanceShopPanel>();//显示高级商店
                 }
                
@@ -49,8 +48,7 @@ public class televisionPanel : BasePanel
                 else
                 {
                     controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Close";
-                    if(UImanager.Instance.GetPanel<AdvanceShopPanel>())
-                        UImanager.Instance.HidePanel<AdvanceShopPanel>();//隐藏高级商店
+                    CloseShop<AdvanceShopPanel>("Advance Shop", "AdvanceButton");
                     UImanager.Instance.ShowPanel<FixShopPanel>();//显示高级商店
                 }
                 break;
@@ -60,6 +58,15 @@ public class televisionPanel : BasePanel
 
     }
 
+    public void  CloseShop<T>(string CloseName,string ButtonName) where T:BasePanel
+    {
+        if (UImanager.Instance.GetPanel<T>())
+        {
+            UImanager.Instance.HidePanel<T>();//隐藏高级商店
+            controlDic[ButtonName].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = CloseName;
+        }
+     
+    }
     public override void HideMe(UnityAction callback)
     {
         base.HideMe(callback);
