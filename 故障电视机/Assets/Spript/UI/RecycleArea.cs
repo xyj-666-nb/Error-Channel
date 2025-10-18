@@ -54,18 +54,25 @@ public class RecycleArea : MonoBehaviour
         MyPanel.SetRecycleAreaActive(false);
         IsTrigger = false;
 
+        RecycleObj(Card.transform);//回收对象
+    }
+
+
+    public void RecycleObj(Transform Obj)
+    {
         // 创建动画序列，组合移动、缩放、旋转
+        transform.DOKill();
         DOTween.Sequence()
-            // 移动到回收点
-            .Append(Card.transform.DOMove(RecyclePos.position, 0.8f))
+            // 移动到回收点 
+            .Append(Obj.DOMove(RecyclePos.position, 0.8f))
             // 同时缩小到0
-            .Join(Card.transform.DOScale(Vector3.zero, 0.8f))
+            .Join(Obj.DOScale(Vector3.zero, 0.8f))
             // 同时旋转
-            .Join(Card.transform.DORotate(Vector3.forward * 720f, 0.8f, RotateMode.FastBeyond360))
+            .Join(Obj.DORotate(Vector3.forward * 720f, 0.8f, RotateMode.FastBeyond360))
             // 动画完成后销毁卡牌
             .OnComplete(() =>
-            { 
-                Destroy(Card.gameObject);
+            {
+                Destroy(Obj.gameObject);
             });
     }
 

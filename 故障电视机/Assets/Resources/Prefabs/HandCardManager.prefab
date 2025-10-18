@@ -509,7 +509,7 @@ MonoBehaviour:
   SplineContainer_PushCard: {fileID: 7571017623760236680}
   CardParent: {fileID: 8730297416485075271}
   SplineContainer_PushEnemyCard: {fileID: 5664705081223477773}
-  EnemyCard: {fileID: 466015306969171052, guid: a51f88e6f3b0aec4fa0e2a34d524d0d3, type: 3}
+  EnemyCard: {fileID: 4234907545382656730, guid: 6b88a5cb5f55301419884e0fda178223, type: 3}
 --- !u!1 &8483485539481621226
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ TagManager:
   - Card
   - pushCardArea
   - Default
+  - EnemyCard
   layers:
   - Default
   - TransparentFX

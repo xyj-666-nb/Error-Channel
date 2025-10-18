@@ -1,10 +1,12 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Splines;
+using UnityEngine.UI;
 
 enum SortingLayerType
 {
@@ -17,7 +19,7 @@ public class Card : MonoBehaviour
     [SerializeField] private bool IsChoose = false;
     public bool IsAnimator = false;
     [SerializeField] private SpriteRenderer BackGround;
-    [SerializeField] private SpriteRenderer ContentImage;
+    public SpriteRenderer ContentImage;
     private Vector3 originalPos;    // 初始位置
     private Vector3 originalScale;  // 初始缩放
     private Vector3 activatedPos;   // 激活状态的位置
@@ -25,14 +27,15 @@ public class Card : MonoBehaviour
     [SerializeField] private float MoveDistance = 2f;
     [SerializeField] private float ScaleSize = 1.2f;
     [SerializeField] private float AnimDuration = 0.7f; // 动画时长
-
     public static Card CurrentSelectedCard;//全局当前选中的卡牌
-
+    public CardNumber MyNumber;
+    [SerializeField]private Canvas MyCanvas;
     private bool IsPushed = false;//是否已经被打出
 
     private bool IsUp = false;//是否已经抬起
     private bool IsDrag = false;//是否正在拖动
     private Coroutine judgeClickCoroutine; // 协程引用，用于停止协程
+
     private void Awake()
     {
         SetSortingLayer(SortingLayerType.Card);
@@ -44,14 +47,23 @@ public class Card : MonoBehaviour
     private void Start()
     {
         IsAnimator = true; // 初始有动画，外部触发结束
+        //初始化对应的数字和等式字符串
+        CardNumberInfo.Instance.GetEquationString(this);
+    }
+
+    public void setLayer(int i)
+    {
+        //设置显示的层级
+       GetComponent<SpriteRenderer>().sortingOrder = i;//层级越大，显示越前面
+       ContentImage.GetComponent<SpriteRenderer>().sortingOrder = i;//内容层级比背景层级大1
+        MyCanvas.sortingOrder= i+1;
     }
 
     public void Push()
     {
         IsPushed = true;
-
         //更改标签
-          this.gameObject.tag = "Default";
+         this.gameObject.tag = "Default";
     }
 
     public void SetOriginalPos(Vector3 pos)//设置卡牌的初始位置
@@ -67,6 +79,8 @@ public class Card : MonoBehaviour
     {
         if (BackGround != null) BackGround.sortingLayerName = type.ToString();
         if (ContentImage != null) ContentImage.sortingLayerName = type.ToString();
+        MyCanvas.sortingLayerName = type.ToString();
+
     }
 
     // 触摸按下瞬间：切换激活/取消状态

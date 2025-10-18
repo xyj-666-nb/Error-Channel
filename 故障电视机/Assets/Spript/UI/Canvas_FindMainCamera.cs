@@ -7,7 +7,7 @@ public class Canvas_FindMainCamera : MonoBehaviour
     private Canvas canvas;
     private void Awake()
     {
-        canvas=GetComponent<Canvas>();
-        canvas.worldCamera = Camera.main;
+        canvas =GetComponent<Canvas>();
+        canvas.worldCamera =Camera.main;
     }
 }

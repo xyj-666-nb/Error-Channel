@@ -27,14 +27,31 @@ public class HandCardManger : MonoBehaviour
         instance = this;
     }
 
+    private void Start()
+    {
+        StartCoroutine(CreateInitCard());
+    }
+
+    IEnumerator CreateInitCard()
+    {
+        yield return new WaitForSeconds(0.2f);
+        GetEnemyCard();
+        yield return new WaitForSeconds(0.2f);
+        for (int i = 0; i < 3; i++)
+        {
+            CreatCard();//创建三张手牌
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+
     private void OnGUI()//测试
     {
-        // 只加大按钮大小：宽200，高60（可根据需要调整数值）
-        if (GUILayout.Button("创建敌人牌",
+
+        if (GUILayout.Button("震动",
             GUILayout.Width(200),  // 按钮宽度
             GUILayout.Height(60))) // 按钮高度
         {
-            GetEnemyCard();
+           CameraControl.Instance.AddCameraShake(0.6f, 0.7f);
         }
     }
 
@@ -140,6 +157,10 @@ public class HandCardManger : MonoBehaviour
         for (int i = 0; i < HandCardList.Count;i++)
         {
             float StartPos = FirstCardPos + step * i;//计算每张卡牌的位置
+
+            //设置显示的层级
+            HandCardList[i].GetComponent<Card>().setLayer(i);
+
             Vector3 localSplinePos = SplineContainer_getCard.Spline.EvaluatePosition(StartPos); // 1. 先获取曲线在自身局部空间的位置
             // 2. 通过 SplineContainer 的 transform，将局部位置转换为世界位置
             Vector3 worldSplinePos = SplineContainer_getCard.transform.TransformPoint(localSplinePos);
