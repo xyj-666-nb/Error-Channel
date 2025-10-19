@@ -6,14 +6,12 @@ using System.Collections;
 using System.Diagnostics.Contracts;//引入dotween插件
 
 public enum PushType { Touch,track }//1.是玩家触摸，2.是预设轨迹
-
-
 public class HandCardManger : MonoBehaviour
 {
     private static HandCardManger instance;
     public static HandCardManger Instance => instance;//单例模式
 
-    [SerializeField]private int MaxHandCardCount = 10;//最大手牌数量
+    [SerializeField]private int MaxHandCardCount = 4;//最大手牌数量
     public List<GameObject> HandCardList = new List<GameObject>();//手牌列表
     [SerializeField] private GameObject HandCarPrefabs;//手牌预制体
     [SerializeField] private Transform spawnPoint;//手牌生成点,也就是起始位置
@@ -29,43 +27,39 @@ public class HandCardManger : MonoBehaviour
 
     private void Start()
     {
+        InitCard();
+    }
+
+    public void InitCard()
+    {
         StartCoroutine(CreateInitCard());
     }
 
     IEnumerator CreateInitCard()
     {
         yield return new WaitForSeconds(0.2f);
-        GetEnemyCard();
-        yield return new WaitForSeconds(0.2f);
-        for (int i = 0; i < 3; i++)
+        if(EnemyCard.CurrentEnemyCard==null)//为空才创建敌人卡牌
+            GetEnemyCard();
+        for (int i = 0; i < 5; i++)
         {
-            CreatCard();//创建三张手牌
+            CreatCard();//创建五张手牌
             yield return new WaitForSeconds(0.2f);
-        }
-    }
-
-    private void OnGUI()//测试
-    {
-
-        if (GUILayout.Button("震动",
-            GUILayout.Width(200),  // 按钮宽度
-            GUILayout.Height(60))) // 按钮高度
-        {
-           CameraControl.Instance.AddCameraShake(0.6f, 0.7f);
         }
     }
 
     public void CreatCard()
     {
-        if (HandCardList.Count > MaxHandCardCount)
-        {
-            UImanager.Instance.GetPanel<televisionPanel>().SetGetCardButtonState(false);//如果手牌数量大于最大手牌数量则禁用按钮
-            return;
-        }
         GameObject Card = PoolManage.Instance.GetObj(HandCarPrefabs);//通过对象池获取卡牌
         Card.transform.parent = CardParent;
         HandCardList.Add(Card);//添加进手牌列表
         UpdateCardPosition();//调用更新2
+    }
+
+    // 随机回收一张卡牌
+    public void RandomRecycleCard()
+    {
+        int RandomIndex = Random.Range(0, HandCardList.Count);
+        RecycleArea.Instance.RecycleCard(HandCardList[RandomIndex].GetComponent<Card>());
     }
 
     public void PushCard(PushType Type)
@@ -191,14 +185,18 @@ public class HandCardManger : MonoBehaviour
     //——————————给出敌人牌组——————————
     [Space(10)]
     [SerializeField] private SplineContainer SplineContainer_PushEnemyCard;//这里是敌人卡牌的的轨道
-    public GameObject EnemyCard;//敌人卡牌预制体
+    public GameObject enemyCard;//敌人卡牌预制体
 
     public void GetEnemyCard()//得到一张敌人牌
     {
-       GameObject EnemyCardObj= PoolManage.Instance.GetObj(EnemyCard);//通过对象池获取卡牌
+       GameObject EnemyCardObj= PoolManage.Instance.GetObj(enemyCard);//通过对象池获取卡牌
         //设置父对象
         EnemyCardObj.transform.parent = CardParent;
         EnemyCardObj.transform.position = SplineContainer_PushEnemyCard.Spline[0].Position;//设置初始位置
         StartCoroutine(MoveCard(EnemyCardObj.transform, SplineContainer_PushEnemyCard, 0.3f)); // 启动移动协程
+
+
+        //重新初始化换牌
+        PassPromptText.Instance.InitPassText();
     }
 }

@@ -1,13 +1,21 @@
 
+using Microsoft.Win32.SafeHandles;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [System.Serializable]
-class NumberInfo
+public class NumberInfo
 {
    public int Number;//数字
    public string EquationString;//等式字符串
 }
+[System.Serializable]
+public class levelNumberInfo
+{
+  public List<NumberInfo> PlayerNumberInfo;
+  public List<NumberInfo> EnemyNumberInfo;
+}
+
 
 public class CardNumberInfo : MonoBehaviour
 {
@@ -15,69 +23,78 @@ public class CardNumberInfo : MonoBehaviour
     private static CardNumberInfo instance;
     public static CardNumberInfo Instance => instance;
 
-    //装载不同的关卡数字信息
-    [SerializeField] private List<NumberInfo> NumberInfoList_Level1 = new List<NumberInfo>();
-    [SerializeField] private List<NumberInfo> NumberInfoList_Level2 = new List<NumberInfo>();
-    [SerializeField] private List<NumberInfo> NumberInfoList_Level3 = new List<NumberInfo>();
-    [SerializeField] private List<NumberInfo> NumberInfoList_Level4 = new List<NumberInfo>();
-    [SerializeField] private List<NumberInfo> NumberInfoList_Level5 = new List<NumberInfo>();
+    //4种不同等级的数字信息列表
+    [SerializeField] private levelNumberInfo Level1Info;
+    [SerializeField] private levelNumberInfo Level2Info;
+    [SerializeField] private levelNumberInfo Level3Info;
+    [SerializeField] private levelNumberInfo Level4Info;
+    [SerializeField] private levelNumberInfo Level5Info;
 
-    [Space(10)]
-    //敌人的数字信息
-    [SerializeField] private List<int> EnemyNumberInfoList= new List<int>();
+    [SerializeField] private levelNumberInfo CurrentLeveInfo;
 
-    private List<int> AlreadyUsedIndexList = new List<int>();//防止重复
-     private float repeatProbability = 0.2f;//重复获取一个值的概率
+    private List<int> AlreadyUsedIndexList_player = new List<int>();//防止重复
+    private List<int> AlreadyUsedIndexList_enemy = new List<int>();//防止重复
+    private float repeatProbability = 0.2f;//重复获取一个值的概率
 
     private void Awake()
     {
         instance = this;
     }
 
+    private void Start()
+    {
+        ChangeLevelData(GameLevel.Level1);
+    }
+
     //根据关卡和数字获取等式字符串
     public void GetEquationString(Card card)
     {
-        List<NumberInfo> currentList = null;
-        switch (PlayerManager.instance.CurrentLevel)
+
+        var Index = GetIndex(CurrentLeveInfo.PlayerNumberInfo, AlreadyUsedIndexList_player);
+        card.MyNumber.SetNumber(CurrentLeveInfo.PlayerNumberInfo[Index].Number, CurrentLeveInfo.PlayerNumberInfo[Index].EquationString);//设置一下卡片
+    }
+
+    public void GetEnemyNumber(EnemyCard Card) 
+    {
+        var Index = GetIndex(CurrentLeveInfo.EnemyNumberInfo, AlreadyUsedIndexList_enemy);
+        Card.Number = CurrentLeveInfo.EnemyNumberInfo[Index].Number;
+        Card.NumberText.text = CurrentLeveInfo.EnemyNumberInfo[Index].EquationString.ToString();
+    }
+    public void ChangeLevelData(GameLevel Level)
+    {
+        switch(Level)
         {
             case GameLevel.Level1:
-                currentList = NumberInfoList_Level1;
+                CurrentLeveInfo = Level1Info;
                 break;
             case GameLevel.Level2:
-                currentList = NumberInfoList_Level2;
+                CurrentLeveInfo = Level2Info;
                 break;
             case GameLevel.Level3:
-                currentList = NumberInfoList_Level3;
+                CurrentLeveInfo = Level3Info;
                 break;
             case GameLevel.Level4:
-                currentList = NumberInfoList_Level4;
+                CurrentLeveInfo= Level4Info;
                 break;
             case GameLevel.Level5:
-                currentList = NumberInfoList_Level5;
+                CurrentLeveInfo = Level5Info;
                 break;
         }
-        var Index = GetIndex(currentList);
-        card.MyNumber.SetNumber(currentList[Index].Number, currentList[Index].EquationString);//设置一下卡片
     }
 
-    public int GetEnemyNumber() 
+    private int GetIndex(List<NumberInfo> list,List<int> _AlreadyUsedIndexList)
     {
-        return EnemyNumberInfoList[Random.Range(0, EnemyNumberInfoList.Count)];
-    }
-
-    private int GetIndex(List<NumberInfo> list)
-    {
-        if (AlreadyUsedIndexList.Count >= list.Count)
-            AlreadyUsedIndexList.Clear();
+        if (_AlreadyUsedIndexList.Count >= list.Count)
+            _AlreadyUsedIndexList.Clear();
 
         int index;
         index = Random.Range(0, list.Count);
 
-        if (AlreadyUsedIndexList.Contains(index))
+        if (_AlreadyUsedIndexList.Contains(index))
         {
             if (Random.value < repeatProbability)
             {
-                AlreadyUsedIndexList.Remove(index); // 移除“已用标记”，避免下次判定为已用
+                _AlreadyUsedIndexList.Remove(index); // 移除“已用标记”，避免下次判定为已用
                 return index;
             }
             else
@@ -85,11 +102,11 @@ public class CardNumberInfo : MonoBehaviour
                 do
                 {
                     index = Random.Range(0, list.Count);
-                } while (AlreadyUsedIndexList.Contains(index));
+                } while (_AlreadyUsedIndexList.Contains(index));
             }
         }
 
-        AlreadyUsedIndexList.Add(index);
+        _AlreadyUsedIndexList.Add(index);
         return index;
     }
 }

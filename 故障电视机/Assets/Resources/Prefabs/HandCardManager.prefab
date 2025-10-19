@@ -62,23 +62,23 @@ MonoBehaviour:
   - m_EditModeType: 1
     m_Knots:
     - Position:
-        x: 0
-        y: 0
+        x: 2.26
+        y: 0.4100001
         z: 0
       TangentIn:
         x: -0
         y: -0
-        z: -0.5063595
+        z: -0.27676165
       TangentOut:
         x: 0
         y: 0
-        z: 0.5063595
+        z: 0.27676165
       Rotation:
         value:
-          x: -0.5380498
-          y: 0.45880538
-          z: -0.45880532
-          w: 0.53804976
+          x: -0.53406817
+          y: 0.46343413
+          z: -0.46343407
+          w: 0.5340682
     - Position:
         x: 5
         y: 0.79999995
@@ -86,35 +86,35 @@ MonoBehaviour:
       TangentIn:
         x: -0
         y: -0
-        z: -1.6666666
+        z: -0.9086936
       TangentOut:
         x: 0
         y: 0
-        z: 1.6666666
+        z: 0.9012716
       Rotation:
         value:
-          x: 0.50000006
-          y: -0.49999994
-          z: 0.50000006
-          w: -0.49999994
+          x: -0.49831
+          y: 0.5016843
+          z: -0.5016843
+          w: 0.49831
     - Position:
-        x: 10
-        y: 0
+        x: 7.69
+        y: 0.3800001
         z: 0
       TangentIn:
         x: -0
         y: -0
-        z: -0.5063595
+        z: -0.2722591
       TangentOut:
         x: 0
         y: 0
-        z: 0.5063595
+        z: 0.2722591
       Rotation:
         value:
-          x: -0.4588053
-          y: 0.5380498
-          z: -0.5380498
-          w: 0.45880544
+          x: 0.45981938
+          y: -0.5371835
+          z: 0.53718364
+          w: -0.45981926
     m_MetaData:
     - Mode: 0
       Tension: 0.5
@@ -501,7 +501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8ab6cab6236dc848a792935119b2785, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHandCardCount: 9
+  MaxHandCardCount: 4
   HandCardList: []
   HandCarPrefabs: {fileID: 466015306969171052, guid: a51f88e6f3b0aec4fa0e2a34d524d0d3, type: 3}
   spawnPoint: {fileID: 747475292845903627}
@@ -509,7 +509,7 @@ MonoBehaviour:
   SplineContainer_PushCard: {fileID: 7571017623760236680}
   CardParent: {fileID: 8730297416485075271}
   SplineContainer_PushEnemyCard: {fileID: 5664705081223477773}
-  EnemyCard: {fileID: 4234907545382656730, guid: 6b88a5cb5f55301419884e0fda178223, type: 3}
+  enemyCard: {fileID: 4234907545382656730, guid: 6b88a5cb5f55301419884e0fda178223, type: 3}
 --- !u!1 &8483485539481621226
 GameObject:
   m_ObjectHideFlags: 0

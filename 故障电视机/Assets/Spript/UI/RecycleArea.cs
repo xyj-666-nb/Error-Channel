@@ -25,7 +25,7 @@ public class RecycleArea : MonoBehaviour
     {
         if(collision.CompareTag("Card"))
         {
-            MyPanel.RecycleArea.color = Color.red;
+            MyPanel.RecycleArea_Image.color = Color.red;
             MyPanel.SetRecycleAreaActive(true);
             IsTrigger=true;
         }
@@ -36,7 +36,7 @@ public class RecycleArea : MonoBehaviour
     {
         if (collision.CompareTag("Card"))
         {
-            MyPanel.RecycleArea.color = Color.white;
+            MyPanel.RecycleArea_Image.color = Color.white;
             MyPanel.SetRecycleAreaActive(false);
             IsTrigger = false;
         }
@@ -50,7 +50,7 @@ public class RecycleArea : MonoBehaviour
         HandCardManger.Instance.UpdateCardPosition();
         Card.CurrentSelectedCard = null;
 
-        MyPanel.RecycleArea.color = Color.white;
+        MyPanel.RecycleArea_Image.color = Color.white;
         MyPanel.SetRecycleAreaActive(false);
         IsTrigger = false;
 

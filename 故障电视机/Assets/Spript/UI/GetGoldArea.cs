@@ -8,6 +8,7 @@ public class GetGoldArea : MonoBehaviour
     public static GetGoldArea Instance => instance;
 
     [SerializeField] private Transform GoldPos;//金币创建点
+    [SerializeField] private Transform UseGoldPos;//使用金币点
 
     //放出金币的区域
     [SerializeField] private GameObject Goldprefabs;//金币预制体
@@ -22,6 +23,11 @@ public class GetGoldArea : MonoBehaviour
         StartCoroutine(Create( Amount));
     }
 
+    public void UseGoldInAdvanceShop(int Amount)
+    {
+        StartCoroutine(UseGold(Amount));
+    }
+
     IEnumerator Create(int Amount)
     {
         for (int i = 0; i < Amount; i++)
@@ -31,6 +37,17 @@ public class GetGoldArea : MonoBehaviour
            yield return new WaitForSeconds(0.2f);
            UI_ShowGold.Instance.RecycleGold(Obj, Goldprefabs);
 
+        }
+    }
+
+    IEnumerator UseGold(int Amount)
+    {
+        for (int i = 0; i < Amount; i++)
+        {
+            var Obj = PoolManage.Instance.GetObj(Goldprefabs);//从对象池获取金币
+            Obj.transform.position = UseGoldPos.position;//设置位置
+            yield return new WaitForSeconds(0.2f);
+            UI_ShowGold.Instance.UseGoldInAdvanceShop(Obj, Goldprefabs);
 
         }
     }

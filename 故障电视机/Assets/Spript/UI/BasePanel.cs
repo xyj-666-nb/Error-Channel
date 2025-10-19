@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class BasePanel : MonoBehaviour
 {
-    protected Dictionary<string, UIBehaviour> controlDic = new Dictionary<string, UIBehaviour>();
+    public Dictionary<string, UIBehaviour> controlDic = new Dictionary<string, UIBehaviour>();
     private static List<string> DefaultNameList = new List<string>()
     {
        "Image",

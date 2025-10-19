@@ -14,7 +14,8 @@ public class UI_ShowGold : MonoBehaviour
     private int targetGold; // 目标金币数值
     private int currentGold; // 当前显示的金币数值
 
-    [SerializeField] Transform RecycleGoldPos; // 回收金币位置
+    [SerializeField]private Transform RecycleGoldPos; // 回收金币位置
+    [SerializeField]private Transform UseGoldPos_AdvanceShop; // 使用金币位置
 
     [Header("动画参数")]
     [Tooltip("单个金币变化的时间（秒）")]
@@ -108,5 +109,15 @@ public class UI_ShowGold : MonoBehaviour
             {
                 PoolManage.Instance.PushObj(Prefabs, Gold);
             });
+    }
+
+    public void UseGoldInAdvanceShop(GameObject Gold, GameObject Prefabs)
+    {
+        Gold.transform.DOMove(UseGoldPos_AdvanceShop.position, 0.5f)
+           .SetEase(Ease.InBack)
+           .OnComplete(() =>
+           {
+               PoolManage.Instance.PushObj(Prefabs, Gold);
+           });
     }
 }

@@ -59,11 +59,29 @@ public class Card : MonoBehaviour
         MyCanvas.sortingOrder= i+1;
     }
 
+    public void RefreshData()
+    {
+        //刷新当前的卡牌数据
+        Color color = MyNumber.EquationText.color;
+        DOTween.Sequence().Append(MyNumber.EquationText.DOFade(0, 0.3f)).OnComplete(
+        () =>{
+            CardNumberInfo.Instance.GetEquationString(this);
+            MyNumber.EquationText.DOColor(color, 0.3f);
+        });
+    }
+
     public void Push()
     {
         IsPushed = true;
         //更改标签
          this.gameObject.tag = "Default";
+
+        //卡牌每次被打出都要检查当前的玩家手上的牌空没空
+        if(HandCardManger.Instance.HandCardList.Count<=1)
+        {
+            //就重新初始化牌
+            HandCardManger.Instance.InitCard();
+        }
     }
 
     public void SetOriginalPos(Vector3 pos)//设置卡牌的初始位置

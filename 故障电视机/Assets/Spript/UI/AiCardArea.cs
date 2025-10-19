@@ -58,28 +58,10 @@ public class AiCardArea : MonoBehaviour
             .OnComplete(() =>
             {
                 //触发比较系统
-                if(EnemyCard.CurrentEnemyCard.Number> Card.MyNumber.Number)
-                {
-                    //失败扣血加屏幕晃动！
-                    PlayerManager.instance.ChangeHealth(-1);
-                    CameraControl.Instance.AddCameraShake(0.5f, 0.6f);
-                    //回收两张牌然后创建新牌
-                    RecycleArea.Instance.RecycleCard(Card);
-                    RecycleArea.Instance.RecycleObj(EnemyCard.CurrentEnemyCard.transform);
-                    EnemyCard.CurrentEnemyCard= null;
-                    HandCardManger.Instance.GetEnemyCard();//重新获取敌人卡牌
-                }
+                if (EnemyCard.CurrentEnemyCard.Number > Card.MyNumber.Number)
+                    PlayerManager.instance.PlayerLose(Card);//玩家输
                 else
-                {
-                    //发放钱币奖励
-                    GetGoldArea.Instance.CreateGold(10);
-                    PlayerManager.instance.ChangeGold(10);
-                    //回收两张牌然后创建新牌
-                    RecycleArea.Instance.RecycleCard(Card);
-                    RecycleArea.Instance.RecycleObj(EnemyCard.CurrentEnemyCard.transform);
-                    EnemyCard.CurrentEnemyCard = null;
-                    HandCardManger.Instance.GetEnemyCard();//重新获取敌人卡牌
-                }
+                    PlayerManager.instance.PlayerWin(Card);//玩家赢
             });
     }
 }

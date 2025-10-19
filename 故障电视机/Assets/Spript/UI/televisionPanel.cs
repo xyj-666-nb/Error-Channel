@@ -8,23 +8,38 @@ using UnityEngine.UI;
 
 public class televisionPanel : BasePanel
 {
-     public Image RecycleArea;//回收区域图片
+    public Image RecycleArea_Image;//回收区域图片
     public Image pushCardArea;//打出卡牌区域图片
+    [SerializeField] private TextMeshProUGUI ShowCurrentLevelText;
     public override void Awake()
     {
         base.Awake();
         //最开始设置回收区域
-        RecycleArea.color = new Color(RecycleArea.color.r, RecycleArea.color.g, RecycleArea.color.b, 0.4f);//设置为半透明
+        RecycleArea_Image.color = new Color(RecycleArea_Image.color.r, RecycleArea_Image.color.g, RecycleArea_Image.color.b, 0.4f);//设置为半透明
     }
 
+  
     public override void ClickButton(string controlName)
     {
         base.ClickButton(controlName);
 
         switch (controlName)
         {
-            case "GetCardButton":
-                HandCardManger.Instance.CreatCard();//创建卡牌
+            case "PassButton":
+                //判断玩家当前有没有选择手牌
+               if(Card.CurrentSelectedCard!=null)
+                {
+                    //随机抽出牌来回收
+                    RecycleArea.Instance.RecycleCard(Card.CurrentSelectedCard);
+                    HandCardManger.Instance.CreatCard();//创建卡牌                          
+                    PassPromptText.Instance.TriggerPass();//触发pass文本更新
+                }
+               else
+               {
+                    //触发警告
+                    UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "请选择你要更换的手牌");
+                }
+             
                 break;
             case "PushCardButton":
                 HandCardManger.Instance.PushCard(PushType.track);//打出卡牌
@@ -62,6 +77,11 @@ public class televisionPanel : BasePanel
 
     }
 
+    public void ChangeLevelText(GameLevel Level)
+    {
+        ShowCurrentLevelText.text="当前游戏难度：" +Level.ToString();
+    }
+
     public void  CloseShop<T>(string CloseName,string ButtonName) where T:BasePanel
     {
         if (UImanager.Instance.GetPanel<T>())
@@ -91,30 +111,18 @@ public class televisionPanel : BasePanel
         base.Update();
     }
 
-    //提供给外部一个控制出牌按钮的接口
-    public void SetGetCardButtonState(bool IsCanUse)
-    {
-       Button GetCardButton=controlDic["GetCardButton"]  as Button;
-        GetCardButton.interactable = IsCanUse;//设置按钮是否可以点击
-        //设置按钮的颜色
-        Color TargetColor = IsCanUse ? new Color(1, 1, 1, 1) : new Color(1, 1, 1, 0f);
-        transform.DOKill();//先停止之前的动画
-        GetCardButton.GetComponent<Image>().DOColor(TargetColor,0.5f);//渐变颜色
-        GetCardButton.GetComponentInChildren<TextMeshProUGUI>().DOColor(TargetColor, 0.5f);//渐变颜色
-    }
-
     public void SetRecycleAreaActive(bool IsActive)
     {
-        Color color = RecycleArea.color;
+        Color color = RecycleArea_Image.color;
         if (IsActive)
-            RecycleArea.DOColor(new Color(color.r, color.g, color.b, 1f), 0.5f); // 高亮
+            RecycleArea_Image.DOColor(new Color(color.r, color.g, color.b, 1f), 0.5f); // 高亮
         else
-            RecycleArea.DOColor(new Color(color.r, color.g, color.b, 0.4f), 0.5f); // 半透明
+            RecycleArea_Image.DOColor(new Color(color.r, color.g, color.b, 0.4f), 0.5f); // 半透明
     }
 
     public void SetpushCardAreaActive(bool IsActive)
     {
-        Color color = RecycleArea.color;
+        Color color = RecycleArea_Image.color;
         if (IsActive)
             pushCardArea.DOColor(new Color(color.r, color.g, color.b, 1f), 0.3f); // 高亮
         else

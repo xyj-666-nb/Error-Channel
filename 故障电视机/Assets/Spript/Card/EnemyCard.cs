@@ -1,5 +1,7 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -10,7 +12,7 @@ public class EnemyCard : MonoBehaviour
     //敌人卡牌
     [SerializeField]private SpriteRenderer BackGround;
     [SerializeField] private SpriteRenderer ContentImage;
-    [SerializeField] private TextMeshProUGUI NumberText;
+    public TextMeshProUGUI NumberText;
     public int Number=0;
 
     private void Start()
@@ -21,8 +23,24 @@ public class EnemyCard : MonoBehaviour
 
     public void GetNumber()
     {
-        Number= CardNumberInfo.Instance.GetEnemyNumber();
-        NumberText.text = Number.ToString();
+        CardNumberInfo.Instance.GetEnemyNumber(this);//获取敌人数字
+    }
+
+    public  void SetHideOrShowCurrentCard(bool IsShow)
+    {
+        this.gameObject.SetActive(IsShow);
+    }
+
+
+    public void RefreshCard()
+    {
+        //刷新当前的卡牌数据
+        Color color = NumberText.color;
+        DOTween.Sequence().Append(NumberText.DOFade(0, 0.3f)).OnComplete(
+        () => {
+            CardNumberInfo.Instance.GetEnemyNumber(this);//重新刷新当前数据
+            NumberText.DOColor(color, 0.3f);
+        });
     }
 
 }
