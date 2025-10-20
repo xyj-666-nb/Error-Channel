@@ -69,7 +69,9 @@ public class AdvanceShopPanel : BasePanel
             case "AutoCalculator_Button":
                 //自动计算器按钮
                 //生成自动计算机,显示当前敌人的数值
-
+                PlayerManager.instance.ActiveAutoButton();
+                //变为不可交互
+                (controlDic["AutoCalculator_Button"] as Button).interactable = false;
                 break;
 
         }

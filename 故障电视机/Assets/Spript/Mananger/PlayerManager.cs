@@ -33,6 +33,7 @@ public class PlayerManager : MonoBehaviour
     public int AvancedCardAmount_NeedMoney = 100;//升级额外卡牌所需金币数量
     public bool IsCanAdvanceCardAmount = true;//是否可以升级额外卡牌数量
     public int CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量
+    public bool IsGetAutoCulCaltorSkill;
 
     [SerializeField]private List<int> LevelCangetGoldList = new List<int>() { 1, 5, 10, 25, 50 };//每个难度可获得的金币数量
     public List<int> AdvanceLevelNeedMoney=new List<int>() { 20, 100, 250, 500 };//升级所需金币数量
@@ -49,6 +50,12 @@ public class PlayerManager : MonoBehaviour
         CurrenWinningStreak = 0;
         //设置等级
         CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量归零
+    }
+
+    public void ActiveAutoButton()
+    {
+        IsGetAutoCulCaltorSkill=true;
+        UImanager.Instance.GetPanel<televisionPanel>().SetCallAutoButtonActive(true);
     }
 
     //玩家胜利函数

@@ -11,14 +11,28 @@ public class televisionPanel : BasePanel
     public Image RecycleArea_Image;//回收区域图片
     public Image pushCardArea;//打出卡牌区域图片
     [SerializeField] private TextMeshProUGUI ShowCurrentLevelText;
+    [SerializeField] GameObject CallAutoButton;//呼唤计算器的按钮
     public override void Awake()
     {
         base.Awake();
         //最开始设置回收区域
         RecycleArea_Image.color = new Color(RecycleArea_Image.color.r, RecycleArea_Image.color.g, RecycleArea_Image.color.b, 0.4f);//设置为半透明
+        CallAutoButton.SetActive(false);//最开始未激活
     }
 
-  
+    public void SetCallAutoButtonActive(bool IsActive)
+    {
+        if (IsActive)
+        {
+            CallAutoButton.SetActive(true);
+            CallAutoButton.GetComponent<Image>().DOFade(1f, 0.5f);
+        }
+        else
+            CallAutoButton.GetComponent<Image>().DOFade(0f, 0.5f).OnComplete(() =>{ CallAutoButton.SetActive(false); });
+
+    }
+
+
     public override void ClickButton(string controlName)
     {
         base.ClickButton(controlName);
@@ -72,6 +86,11 @@ public class televisionPanel : BasePanel
                 }
                 break;
             case "ExitButton":
+                break;
+            case "CallAutoCalculatorButton":
+                UImanager.Instance.ShowPanel<AutoCalculatorpanel>();//自动调用计算器面板
+                //失活自己
+                controlDic["CallAutoCalculatorButton"].gameObject.SetActive(false);
                 break;
         }
 

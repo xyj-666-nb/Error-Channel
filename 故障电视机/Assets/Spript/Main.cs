@@ -26,7 +26,6 @@ public class Main : MonoBehaviour
 
         //呼唤ui，目前只有电视机这一个面板所以就先呼出这个面板
         UImanager.Instance.ShowPanel<televisionPanel>();
-        UImanager.Instance.ShowPanel<AutoCalculatorpanel>();
     }
 
     // Update is called once per frame
