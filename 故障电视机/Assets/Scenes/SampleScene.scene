@@ -124,6 +124,55 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &21464076 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 363065004136662753, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
+  m_PrefabInstance: {fileID: 72364017}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &21464082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 21464076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe347f49d2f8a04d913547329b97143, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  material: {fileID: 2100000, guid: 1daa5a834babeca49aad070cc502314b, type: 2}
+  whiteNoiseFrequency: 1
+  whiteNoiseLength: 0.1
+  screenJumpFrequency: 1
+  screenJumpLength: 0.2
+  screenJumpMinLevel: 0.1
+  screenJumpMaxLevel: 0.9
+  flickeringStrength: 0.002
+  flickeringCycle: 111
+  isSlippage: 1
+  isSlippageNoise: 1
+  slippageStrength: 0.005
+  slippageInterval: 1
+  slippageScrollSpeed: 33
+  slippageSize: 11
+  chromaticAberrationStrength: 0.005
+  isChromaticAberration: 1
+  isMultipleGhost: 1
+  multipleGhostStrength: 0.01
+  isScanline: 1
+  isMonochrome: 0
+  isLetterBox: 0
+  isLetterBoxEdgeBlur: 0
+  letterBoxType: 0
+  isFilmDirt: 0
+  filmDirtTex: {fileID: 0}
+  isDecalTex: 0
+  decalTex: {fileID: 0}
+  decalTexPos: {x: 0, y: 0}
+  decalTexScale: {x: 0, y: 0}
+  isLowResolution: 1
+  resolutions: {x: 0, y: 0}
 --- !u!1 &72249099 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2418051997005584509, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
@@ -254,9 +303,15 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3247220718622430481, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 808655369}
     - targetCorrespondingSourceObject: {fileID: 2418051997005584509, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 72249103}
+    - targetCorrespondingSourceObject: {fileID: 363065004136662753, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 21464082}
   m_SourcePrefab: {fileID: 100100000, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
 --- !u!1 &510407835
 GameObject:
@@ -466,6 +521,23 @@ MonoBehaviour:
   CurrentLeveInfo:
     PlayerNumberInfo: []
     EnemyNumberInfo: []
+--- !u!1 &808655366 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3247220718622430481, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
+  m_PrefabInstance: {fileID: 72364017}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &808655369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 808655366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be91005d57b1f1041acc947221b58704, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
