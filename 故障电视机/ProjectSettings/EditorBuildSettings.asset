@@ -10,7 +10,6 @@ EditorBuildSettings:
     guid: 2cda990e2423bbf4892e6590ba056729
   m_BuildProfiles: []
   m_configObjects:
-    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 171ec8804fc266145a4c323a8a01effa, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 5074e62535c35f844a3440f98ba9c5a6, type: 2}
   m_SlimFeaturesWeixinMiniGame:
     AllocateOverhead: 1
