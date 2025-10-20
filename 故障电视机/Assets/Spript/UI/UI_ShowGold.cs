@@ -32,8 +32,9 @@ public class UI_ShowGold : MonoBehaviour
     {
         instance = this;
         goldText = GetComponent<TextMeshProUGUI>();
-        currentGold = 0;
-        targetGold = 0;
+        currentGold = PlayerManager.instance.PlayerCurrentGold;
+        targetGold = PlayerManager.instance.PlayerCurrentGold;
+        goldText.text = $"½ð±Ò£º{currentGold}";
     }
 
     public void UpdateGold(int gold)

@@ -53,10 +53,17 @@ public class Card : MonoBehaviour
 
     public void setLayer(int i)
     {
-        //设置显示的层级
-       GetComponent<SpriteRenderer>().sortingOrder = i;//层级越大，显示越前面
-       ContentImage.GetComponent<SpriteRenderer>().sortingOrder = i;//内容层级比背景层级大1
-        MyCanvas.sortingOrder= i+1;
+        // i越大层级越靠上，每个i层级内部有固定的层级关系
+        int baseOrder = i * 10; // 使用较大的倍数避免层级冲突
+
+        // 最底层：背景SpriteRenderer
+        GetComponent<SpriteRenderer>().sortingOrder = baseOrder;
+
+        // 中间层：Canvas
+        MyCanvas.sortingOrder = baseOrder + 1;
+
+        // 最上层：内容图片
+        ContentImage.GetComponent<SpriteRenderer>().sortingOrder = baseOrder + 2;
     }
 
     public void RefreshData()
@@ -76,8 +83,7 @@ public class Card : MonoBehaviour
         //更改标签
          this.gameObject.tag = "Default";
 
-        //卡牌每次被打出都要检查当前的玩家手上的牌空没空
-        if(HandCardManger.Instance.HandCardList.Count<=1)
+        if (HandCardManger.Instance.HandCardList.Count<=1+PlayerManager.instance.CurrentAdvanceCardAmount)
         {
             //就重新初始化牌
             HandCardManger.Instance.InitCard();
@@ -98,6 +104,10 @@ public class Card : MonoBehaviour
         if (BackGround != null) BackGround.sortingLayerName = type.ToString();
         if (ContentImage != null) ContentImage.sortingLayerName = type.ToString();
         MyCanvas.sortingLayerName = type.ToString();
+        if( type == SortingLayerType.Card)
+            ContentImage.GetComponent<SpriteRenderer>().sortingOrder--;
+        else
+            ContentImage.GetComponent<SpriteRenderer>().sortingOrder++;
 
     }
 

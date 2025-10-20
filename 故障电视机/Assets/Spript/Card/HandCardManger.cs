@@ -30,6 +30,11 @@ public class HandCardManger : MonoBehaviour
         InitCard();
     }
 
+    public void AddCardMount()
+    {
+        MaxHandCardCount++;
+    }
+
     public void InitCard()
     {
         StartCoroutine(CreateInitCard());
@@ -40,9 +45,10 @@ public class HandCardManger : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         if(EnemyCard.CurrentEnemyCard==null)//为空才创建敌人卡牌
             GetEnemyCard();
-        for (int i = 0; i < 5; i++)
+        var HandCardCount = HandCardList.Count;
+        for (int i = 0; i < MaxHandCardCount- HandCardCount; i++)//直接补满手牌
         {
-            CreatCard();//创建五张手牌
+            CreatCard();//创建手牌
             yield return new WaitForSeconds(0.2f);
         }
     }

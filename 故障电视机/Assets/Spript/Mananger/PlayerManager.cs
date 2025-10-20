@@ -25,16 +25,20 @@ public class PlayerManager : MonoBehaviour
     public int MaxCardAmount = 5;//最大卡牌数量
     public GameLevel CurrentLevel = GameLevel.Level1;//当前关卡
 
+    //关于修复相关
     public bool IsObtainCalculatorSkill = false;//是否获得计算技能
     public bool IsObtainShowGoldSkill = true;//是否获得金币显示
-    public bool IsObtainExtraCardSkill = false;//是否获得额外卡牌技能
+
+    //关于升级相关
+    public int AvancedCardAmount_NeedMoney = 100;//升级额外卡牌所需金币数量
+    public bool IsCanAdvanceCardAmount = true;//是否可以升级额外卡牌数量
+    public int CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量
 
     [SerializeField]private List<int> LevelCangetGoldList = new List<int>() { 1, 5, 10, 25, 50 };//每个难度可获得的金币数量
     public List<int> AdvanceLevelNeedMoney=new List<int>() { 20, 100, 250, 500 };//升级所需金币数量
-
     public int CurrentLevelCanGetGold = 1;//当前难度可获得金币数量
-
     public int CurrenWinningStreak = 0;//当前连胜数
+
 
     public void Awake()
     {
@@ -44,6 +48,7 @@ public class PlayerManager : MonoBehaviour
         CurrentHealth= MaxHealth;//初始化血量
         CurrenWinningStreak = 0;
         //设置等级
+        CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量归零
     }
 
     //玩家胜利函数
@@ -61,7 +66,6 @@ public class PlayerManager : MonoBehaviour
         RecycleCurrentPushCard(Card);
     }
 
-
     private void RecycleCurrentPushCard(Card Card)
     {
         RecycleArea.Instance.RecycleCard(Card);
@@ -77,7 +81,7 @@ public class PlayerManager : MonoBehaviour
         CurrenWinningStreak = 0;//失败连胜数归零
         //扣两滴血
         ChangeHealth(-2);
-        RecycleArea.Instance.RecycleCard(Card);
+        RecycleCurrentPushCard(Card);
         //失败屏幕晃动！
         // CameraControl.Instance.AddCameraShake(0.5f, 0.6f);
         //回收两张牌然后创建新牌
@@ -124,6 +128,13 @@ public class PlayerManager : MonoBehaviour
         ReFreshCardNumber();
         //当前胜利的金币获取数
         CurrentLevelCanGetGold = LevelCangetGoldList[(int)CurrentLevel];
+
+        //调用手牌按钮激活
+        if (UImanager.Instance.GetPanel<AdvanceShopPanel>())
+        {
+            //如果高级商店面板打开的话就刷新按钮
+            UImanager.Instance.GetPanel<AdvanceShopPanel>().SetAddCardAmount_Button_interactable();
+        }
     }
 
     public void ReFreshCardNumber()
