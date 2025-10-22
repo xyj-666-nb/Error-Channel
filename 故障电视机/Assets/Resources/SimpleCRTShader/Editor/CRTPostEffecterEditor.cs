@@ -70,6 +70,7 @@ public class CRTPostEffecterEditor : Editor
         {
             effect.isLetterBox = EditorGUILayout.Toggle("Letter Box On / Off", effect.isLetterBox);
             effect.letterBoxType = (LeterBoxType)EditorGUILayout.EnumPopup("Letter Box Type", effect.letterBoxType);
+            effect.isLetterBoxEdgeBlur = EditorGUILayout.Toggle("Letter Box Edge Blur", effect.isLetterBoxEdgeBlur);
         }
 
         using (new VerticalScope(GUI.skin.box))
@@ -83,13 +84,33 @@ public class CRTPostEffecterEditor : Editor
         using (new VerticalScope(GUI.skin.box))
         {
             effect.isLowResolution = EditorGUILayout.Toggle("Low Resolution", effect.isLowResolution);
-            //effect.resolutions = EditorGUILayout.Vector2IntField("Resolutions", effect.resolutions);
+            effect.resolutions = EditorGUILayout.Vector2IntField("Resolutions", effect.resolutions);
         }
 
         using (new VerticalScope(GUI.skin.box))
         {
             effect.isFilmDirt = EditorGUILayout.Toggle("Film Dirt", effect.isFilmDirt);
             effect.filmDirtTex = (Texture2D)EditorGUILayout.ObjectField("Film Dirt Tex", effect.filmDirtTex, typeof(Texture2D), false);
+        }
+
+        // 新增：渲染范围调整UI
+        using (new VerticalScope(GUI.skin.box))
+        {
+            EditorGUILayout.LabelField("渲染范围（UV 0-1）", EditorStyles.boldLabel);
+            // 范围起点（左、下）
+            using (new HorizontalScope())
+            {
+                EditorGUILayout.LabelField("起点 (左, 下)", GUILayout.Width(80));
+                effect.effectRange.x = EditorGUILayout.Slider(effect.effectRange.x, 0, 1);
+                effect.effectRange.y = EditorGUILayout.Slider(effect.effectRange.y, 0, 1);
+            }
+            // 范围大小（宽、高）
+            using (new HorizontalScope())
+            {
+                EditorGUILayout.LabelField("大小 (宽, 高)", GUILayout.Width(80));
+                effect.effectRange.width = EditorGUILayout.Slider(effect.effectRange.width, 0, 1 - effect.effectRange.x);
+                effect.effectRange.height = EditorGUILayout.Slider(effect.effectRange.height, 0, 1 - effect.effectRange.y);
+            }
         }
 
         EditorUtility.SetDirty(target);

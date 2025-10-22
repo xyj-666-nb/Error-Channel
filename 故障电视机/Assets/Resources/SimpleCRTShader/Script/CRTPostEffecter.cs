@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
@@ -53,6 +54,9 @@ public class CRTPostEffecter : MonoBehaviour
     public bool isLowResolution = true;
     public Vector2Int resolutions;
 
+    // 渲染范围（UV坐标，x=左边界, y=下边界, width=宽度, height=高度，取值0-1）
+    public Rect effectRange = new Rect(0.2f, 0.2f, 0.6f, 0.6f);
+
     #region Properties in shader
     private int _WhiteNoiseOnOff;
     private int _ScanlineOnOff;
@@ -79,6 +83,7 @@ public class CRTPostEffecter : MonoBehaviour
     private int _DecalTexScale;
     private int _FilmDirtOnOff;
     private int _FilmDirtTex;
+    private int _EffectRange;
     #endregion
 
     private void Start()
@@ -101,16 +106,25 @@ public class CRTPostEffecter : MonoBehaviour
         _MultipleGhostStrength = Shader.PropertyToID("_MultipleGhostStrength");
         _LetterBoxOnOff = Shader.PropertyToID("_LetterBoxOnOff");
         _LetterBoxType = Shader.PropertyToID("_LetterBoxType");
+        _LetterBoxEdgeBlurOnOff = Shader.PropertyToID("_LetterBoxEdgeBlur");
         _DecalTex = Shader.PropertyToID("_DecalTex");
         _DecalTexOnOff = Shader.PropertyToID("_DecalTexOnOff");
         _DecalTexPos = Shader.PropertyToID("_DecalTexPos");
         _DecalTexScale = Shader.PropertyToID("_DecalTexScale");
         _FilmDirtOnOff = Shader.PropertyToID("_FilmDirtOnOff");
         _FilmDirtTex = Shader.PropertyToID("_FilmDirtTex");
+        _EffectRange = Shader.PropertyToID("_EffectRange");
     }
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
+        material.SetVector(_EffectRange, new Vector4(
+            effectRange.x,
+            effectRange.y,
+            effectRange.width,
+            effectRange.height
+        ));
+
         ///////White noise
         whiteNoiseTimeLeft -= 0.01f;
         if (whiteNoiseTimeLeft <= 0)
@@ -122,23 +136,23 @@ public class CRTPostEffecter : MonoBehaviour
             }
             else
             {
-                material.SetInteger(_WhiteNoiseOnOff, 0); 
+                material.SetInteger(_WhiteNoiseOnOff, 0);
             }
         }
         //////
-        
-        material.SetInteger(_LetterBoxOnOff, isLetterBox ? 0 : 1); 
-        //material.SetInteger(_LetterBoxEdgeBlurOnOff, isLetterBoxEdgeBlur ? 0 : 1); 
+
+        material.SetInteger(_LetterBoxOnOff, isLetterBox ? 0 : 1);
+        material.SetInteger(_LetterBoxEdgeBlurOnOff, isLetterBoxEdgeBlur ? 1 : 0);
         material.SetInteger(_LetterBoxType, (int)letterBoxType);
 
-        material.SetInteger(_ScanlineOnOff, isScanline ? 1 : 0); 
+        material.SetInteger(_ScanlineOnOff, isScanline ? 1 : 0);
         material.SetInteger(_MonochormeOnOff, isMonochrome ? 1 : 0);
         material.SetFloat(_FlickeringStrength, flickeringStrength);
         material.SetFloat(_FlickeringCycle, flickeringCycle);
         material.SetFloat(_ChromaticAberrationStrength, chromaticAberrationStrength);
         material.SetInteger(_ChromaticAberrationOnOff, isChromaticAberration ? 1 : 0);
         material.SetInteger(_MultipleGhostOnOff, isMultipleGhost ? 1 : 0);
-        material.SetFloat(_MultipleGhostStrength, multipleGhostStrength); 
+        material.SetFloat(_MultipleGhostStrength, multipleGhostStrength);
         material.SetInteger(_FilmDirtOnOff, isFilmDirt ? 1 : 0);
         material.SetTexture(_FilmDirtTex, filmDirtTex);
 
@@ -147,10 +161,10 @@ public class CRTPostEffecter : MonoBehaviour
         material.SetFloat(_SlippageInterval, slippageInterval);
         material.SetFloat(_SlippageNoiseOnOff, isSlippageNoise ? Random.Range(0, 1f) : 1);
         material.SetFloat(_SlippageScrollSpeed, slippageScrollSpeed);
-        material.SetFloat(_SlippageStrength, slippageStrength); 
+        material.SetFloat(_SlippageStrength, slippageStrength);
         material.SetFloat(_SlippageSize, slippageSize);
         //////
-        
+
         //////Screen Jump Noise
         screenJumpTimeLeft -= 0.01f;
         if (screenJumpTimeLeft <= 0)
@@ -188,6 +202,20 @@ public class CRTPostEffecter : MonoBehaviour
             Graphics.Blit(src, dest, material);
         }
         //////
+    }
 
+    // 强制绘制青色边框（移除所有条件判断，确保一定显示）
+    private void OnDrawGizmos()
+    {
+        Debug.Log("OnDrawGizmos 被调用了！");
+        Handles.color = Color.cyan;
+        // 绘制屏幕中间50%区域的线框（像素坐标）
+        float x = 0.25f * Screen.width;
+        float y = 0.25f * Screen.height;
+        float width = 0.5f * Screen.width;
+        float height = 0.5f * Screen.height;
+        Handles.DrawWireCube(new Vector3(x + width / 2, y + height / 2, 0), new Vector3(width, height, 0));
+        Handles.color = Color.red;
+        Handles.DrawSolidDisc(new Vector3(x + width / 2, y + height / 2, 0), Vector3.forward, 5f);
     }
 }

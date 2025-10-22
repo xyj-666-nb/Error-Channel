@@ -5,6 +5,8 @@ Shader "Simple CRT"
         _MainTex ("Texture", 2D) = "white" {}
         _DecalTex ("Decal Texture", 2D) = "white" {}
         _FilmDirtTex ("Dirt Texture", 2D) = "white" {}
+        // 新增：渲染范围参数（x=左边界, y=下边界, z=宽度, w=高度，取值0-1）
+        _EffectRange ("Effect Range (x,y,width,height)", Vector) = (0,0,1,1)
     }
     SubShader
     {
@@ -72,6 +74,9 @@ Shader "Simple CRT"
             sampler2D _FilmDirtTex;
             float4 _FilmDirtTex_ST;
 
+            // 新增：接收C#传递的渲染范围
+            float4 _EffectRange;
+
             float GetRandom(float x);
             float EaseIn(float t0, float t1, float t);
 
@@ -86,6 +91,22 @@ Shader "Simple CRT"
 
             fixed4 frag (v2f i) : SV_Target
             {
+                // 保存原始UV（用于判断范围，不受后续效果影响）
+                float2 originalUV = i.uv;
+
+                // 核心：判断当前像素是否在设定的渲染范围内
+                bool inRange = (originalUV.x >= _EffectRange.x) &&  // 左边界
+                               (originalUV.x <= _EffectRange.x + _EffectRange.z) &&  // 右边界（左+宽）
+                               (originalUV.y >= _EffectRange.y) &&  // 下边界
+                               (originalUV.y <= _EffectRange.y + _EffectRange.w);  // 上边界（下+高）
+
+                // 范围外：直接返回原画面，不应用任何CRT效果
+                if (!inRange)
+                {
+                    return tex2D(_MainTex, originalUV);
+                }
+
+                // 范围内：正常应用所有CRT效果（以下是你原来的逻辑，未修改）
                 float2 uv = i.uv;
 
                 /////Jump noise
@@ -199,8 +220,8 @@ Shader "Simple CRT"
                 /////
 
                 /////Scanline
-                float scanline = sin((i.uv.y + _Time.x) * 800.0) * 0.04;
-                color -= scanline * _ScanlineOnOff;
+               float scanline = sin((i.uv.y + _Time.x) * 1200.0.0) * 0.01;
+color -= scan  line * _ScanlineOnOff;
                 /////
 
                 //////scanline noise

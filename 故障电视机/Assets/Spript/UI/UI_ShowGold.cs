@@ -14,12 +14,15 @@ public class UI_ShowGold : MonoBehaviour
     private int targetGold; // 目标金币数值
     private int currentGold; // 当前显示的金币数值
 
-    [SerializeField]private Transform RecycleGoldPos; // 回收金币位置
-    [SerializeField]private Transform UseGoldPos_AdvanceShop; // 使用金币位置
+    [SerializeField] private Transform RecycleGoldPos; // 回收金币位置
+    [SerializeField] private Transform UseGoldPos_AdvanceShop; // 使用金币位置
+
+    [Header("提示文本")]
+    [SerializeField] private TextMeshProUGUI PromptText; // 新增：提示文本组件
 
     [Header("动画参数")]
     [Tooltip("单个金币变化的时间（秒）")]
-    public float timePerGold = 0.2f;
+    public float timePerGold = 0.05f;
     [Tooltip("动画缓动曲线（控制过渡平滑度）")]
     public Ease easeType = Ease.OutQuad;
     [Tooltip("调用UpdateGold后延迟执行的时间（秒）")]
@@ -28,13 +31,35 @@ public class UI_ShowGold : MonoBehaviour
     private Tween goldTween;
     private Coroutine delayGoldCoroutine; // 存储当前的延迟协程（用于取消）
 
+    // 新增：提示文本相关的变量
+    private Coroutine currentPromptCoroutine;
+    private Tween currentPromptTween;
+
     private void Awake()
     {
         instance = this;
         goldText = GetComponent<TextMeshProUGUI>();
         currentGold = PlayerManager.instance.PlayerCurrentGold;
         targetGold = PlayerManager.instance.PlayerCurrentGold;
-        goldText.text = $"金币：{currentGold}";
+
+        if (PlayerManager.instance.IsObtainShowGoldSkill)
+            goldText.text = $"金币：{currentGold}$";
+        else
+            goldText.text = "金币：##?$";
+
+        // 新增：初始化提示文本
+        if (PromptText != null)
+        {
+            PromptText.alpha = 0f; // 初始隐藏
+        }
+    }
+
+    public void FixMe()
+    {
+        PlayerManager.instance.IsObtainShowGoldSkill = true;
+        currentGold = PlayerManager.instance.PlayerCurrentGold;
+        targetGold = PlayerManager.instance.PlayerCurrentGold;
+        goldText.text = $"金币：{currentGold}$";
     }
 
     public void UpdateGold(int gold)
@@ -121,4 +146,87 @@ public class UI_ShowGold : MonoBehaviour
                PoolManage.Instance.PushObj(Prefabs, Gold);
            });
     }
+
+    // 新增：设置提示文本的方法
+    public void SetPromptText(bool IsAdd, int Amount)
+    {
+        // 检查是否解锁提示文本显示
+        if (!PlayerManager.instance.IsStartShowPrompttext_Gold)
+            return;
+
+        // 取消之前正在运行的提示动画
+        if (currentPromptCoroutine != null)
+        {
+            StopCoroutine(currentPromptCoroutine);
+            currentPromptCoroutine = null;
+        }
+
+        // 取消之前的Tween动画
+        currentPromptTween?.Kill();
+
+        // 设置文本内容和颜色
+        if (IsAdd)
+        {
+            PromptText.color = Color.green;
+            PromptText.text = "+" + Amount.ToString() + "$";
+        }
+        else
+        {
+            PromptText.color = Color.red;
+            PromptText.text =  Amount.ToString() + "$";
+        }
+
+        // 开始新的提示动画
+        currentPromptCoroutine = StartCoroutine(PromptAnimation());
+    }
+
+    // 新增：提示文本动画协程
+    private IEnumerator PromptAnimation()
+    {
+        // 淡入显示
+        currentPromptTween = PromptText.DOFade(1, 0.2f);
+        yield return currentPromptTween.WaitForCompletion();
+
+        // 等待1秒
+        yield return new WaitForSeconds(1f);
+
+        // 淡出隐藏
+        currentPromptTween = PromptText.DOFade(0, 1f);
+        yield return currentPromptTween.WaitForCompletion();
+
+        // 动画完成，清空引用
+        currentPromptCoroutine = null;
+        currentPromptTween = null;
+    }
+
+    // 新增：强制立即隐藏提示文本的方法
+    public void HidePromptImmediately()
+    {
+        if (currentPromptCoroutine != null)
+        {
+            StopCoroutine(currentPromptCoroutine);
+            currentPromptCoroutine = null;
+        }
+
+        currentPromptTween?.Kill();
+        if (PromptText != null)
+        {
+            PromptText.DOFade(0, 0.1f); // 快速隐藏
+        }
+    }
+
+    // 新增：在回收金币时显示提示文本
+    public void RecycleGoldWithPrompt(GameObject Gold, GameObject Prefabs, int goldAmount)
+    {
+        RecycleGold(Gold, Prefabs);
+        SetPromptText(true, goldAmount);
+    }
+
+    // 新增：在使用金币时显示提示文本
+    public void UseGoldWithPrompt(GameObject Gold, GameObject Prefabs, int goldAmount)
+    {
+        UseGoldInAdvanceShop(Gold, Prefabs);
+        SetPromptText(false, goldAmount);
+    }
+
 }

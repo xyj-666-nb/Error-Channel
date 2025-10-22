@@ -26,21 +26,30 @@ public class PlayerManager : MonoBehaviour
     public GameLevel CurrentLevel = GameLevel.Level1;//当前关卡
 
     //关于修复相关
-    public bool IsObtainCalculatorSkill = false;//是否获得计算技能
+    public bool IsObtainShowPart = true;//是否获得显示零件
+    public int IsFixShowGold_NeedPart = 10;//修复显示金币所需要的零件数量
+    public int FixPart_NeedParts = 10;//修复所需零件数量
+    public bool IsFixExitButton = false;//是否有修复退出按钮
+    public int IsFixExitButton_NeedParts = 20;//修复退出按钮所需零件数量
     public bool IsObtainShowGoldSkill = true;//是否获得金币显示
+    //public
 
     //关于升级相关
     public int AvancedCardAmount_NeedMoney = 100;//升级额外卡牌所需金币数量
     public bool IsCanAdvanceCardAmount = true;//是否可以升级额外卡牌数量
     public int CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量
-    public bool IsGetAutoCulCaltorSkill;
+    public bool IsGetAutoCulCaltorSkill;//是否获得计算器自动计算技能
+    public int  GetAutoCulCaltorNeedMoney=500;//获得自动计算器技能所需金币数量
 
     [SerializeField]private List<int> LevelCangetGoldList = new List<int>() { 1, 5, 10, 25, 50 };//每个难度可获得的金币数量
     public List<int> AdvanceLevelNeedMoney=new List<int>() { 20, 100, 250, 500 };//升级所需金币数量
     public int CurrentLevelCanGetGold = 1;//当前难度可获得金币数量
     public int CurrenWinningStreak = 0;//当前连胜数
 
-
+    public bool IsStartShowPrompttext_Gold = false;
+    public int StartShowPrompttext_GoldneedPart = 5;
+    public bool IsStartShowPrompttext_part = false;
+    public int StartShowPrompttext_PartneedPart = 5;
     public void Awake()
     {
         if (instance == null)
@@ -63,8 +72,23 @@ public class PlayerManager : MonoBehaviour
     {
         //增加连胜数
         CurrenWinningStreak++;
+        switch (CurrenWinningStreak)
+        {
+        case 1:
+         Slider_Part.instance.UpdateGetProcess(0.3f);
+                break;
+        case 2:
+         Slider_Part.instance.UpdateGetProcess(0.7f);
+                break;
+        }
+
         if (CurrenWinningStreak >= 3)//判断零件嘉奖规则
+        {
+            Slider_Part.instance.UpdateGetProcess(1f);//直接给到满
             AddPart();//三连胜获得零件,之后每胜利获得一个零件
+            Slider_Part.instance.GetPart(1);
+            UI_ShowPart.Instance.UpdatePartText();
+        }
 
         //发放钱币奖励
         GetGoldArea.Instance.CreateGold(CurrentLevelCanGetGold);
@@ -86,6 +110,7 @@ public class PlayerManager : MonoBehaviour
     public void PlayerLose(Card Card)
     {
         CurrenWinningStreak = 0;//失败连胜数归零
+        Slider_Part.instance.UpdateGetProcess(0);//直接清零
         //扣两滴血
         ChangeHealth(-2);
         RecycleCurrentPushCard(Card);
@@ -93,8 +118,6 @@ public class PlayerManager : MonoBehaviour
         // CameraControl.Instance.AddCameraShake(0.5f, 0.6f);
         //回收两张牌然后创建新牌
     }
-
-  
     public void AddPart()
     {
         PlayerParts++;
@@ -106,12 +129,11 @@ public class PlayerManager : MonoBehaviour
         PlayerCurrentGold += Value;
         //更新金币显示
         UI_ShowGold.Instance.UpdateGold(PlayerCurrentGold);
-    }
-
-    public void SetObtainCalculatorSkill()
-    {
-        IsObtainCalculatorSkill = true;
-       //自动计算
+        //开启金币的提示文本
+        if (Value < 0)
+            UI_ShowGold.Instance.SetPromptText(false, Value);
+        else
+            UI_ShowGold.Instance.SetPromptText(true, Value);
     }
 
     public void ChangeHealth(int value)

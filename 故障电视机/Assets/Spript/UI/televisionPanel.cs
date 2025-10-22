@@ -17,7 +17,9 @@ public class televisionPanel : BasePanel
         base.Awake();
         //最开始设置回收区域
         RecycleArea_Image.color = new Color(RecycleArea_Image.color.r, RecycleArea_Image.color.g, RecycleArea_Image.color.b, 0.4f);//设置为半透明
-        CallAutoButton.SetActive(false);//最开始未激活
+        CallAutoButton.gameObject.SetActive(false);//最开始隐藏呼唤计算器按钮
+        controlDic["ExitButton"].GetComponent<Button>().interactable = false;//不可交互
+
     }
 
     public void SetCallAutoButtonActive(bool IsActive)
@@ -123,7 +125,19 @@ public class televisionPanel : BasePanel
     public override void Start()
     {
         base.Start();
+        //开局隐藏退出按钮
     }
+
+    public void SetFIxExitButton()
+    {
+        PlayerManager.instance.IsFixExitButton = true;
+        controlDic["ExitButton"].gameObject.GetComponent<Image>().DOFade(1f, 1f);
+        controlDic["ExitButton"].GetComponentInChildren<TextMeshProUGUI>().DOFade(1f, 1f);
+        controlDic["ExitButton"].GetComponent<Button>().interactable = true;//可以交互
+
+
+    }
+
 
     protected override void Update()
     {

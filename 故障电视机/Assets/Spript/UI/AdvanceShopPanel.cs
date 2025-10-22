@@ -32,8 +32,10 @@ public class AdvanceShopPanel : BasePanel
                     controlDic["AddLevel_Button"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "难度"+PlayerManager.instance.CurrentLevel.ToString();
                     controlDic["AddLevel_Button"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.AdvanceLevelNeedMoney[(int)PlayerManager.instance.CurrentLevel].ToString() + "$";
                 }
+                else
+                    UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "金币数量不够");
 
-          break;
+                break;
             case "AddCardAmount_Button":
                 //先判断当前的升级额外卡牌数量需要的金币是否足够
                 if (PlayerManager.instance.IsCanAdvanceCardAmount && PlayerManager.instance.PlayerCurrentGold >= PlayerManager.instance.AvancedCardAmount_NeedMoney)
@@ -59,6 +61,8 @@ public class AdvanceShopPanel : BasePanel
                     }
                  
                 }
+                else
+                    UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "金币数量不够");
                 break;
 
             case "OutComeStrengthen_Button":
@@ -69,9 +73,21 @@ public class AdvanceShopPanel : BasePanel
             case "AutoCalculator_Button":
                 //自动计算器按钮
                 //生成自动计算机,显示当前敌人的数值
-                PlayerManager.instance.ActiveAutoButton();
-                //变为不可交互
-                (controlDic["AutoCalculator_Button"] as Button).interactable = false;
+                //先判断金币是否足够
+                if(PlayerManager.instance.GetAutoCulCaltorNeedMoney<=PlayerManager.instance.PlayerCurrentGold)
+                {
+                    PlayerManager.instance.ActiveAutoButton();
+                    //变为不可交互
+                    (controlDic["AutoCalculator_Button"] as Button).interactable = false;
+                    //扣除金币
+                    GetGoldArea.Instance.UseGoldInAdvanceShop(PlayerManager.instance.GetAutoCulCaltorNeedMoney);//使用金币动画
+                    PlayerManager.instance.ChangeGold(-PlayerManager.instance.GetAutoCulCaltorNeedMoney);//扣除金币
+                }
+                else
+                {
+                    UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！","当前金币不够");
+                }
+
                 break;
 
         }
@@ -119,5 +135,6 @@ public class AdvanceShopPanel : BasePanel
         //更新显示当前难度
         controlDic["AddLevel_Button"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "难度" + PlayerManager.instance.CurrentLevel.ToString();
         controlDic["AddLevel_Button"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.AdvanceLevelNeedMoney[(int)PlayerManager.instance.CurrentLevel].ToString() + "$";
+        controlDic["AutoCalculator_Button"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.GetAutoCulCaltorNeedMoney.ToString() + "$";
     }
 }
