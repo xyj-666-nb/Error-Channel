@@ -10,7 +10,6 @@ public class FixShopPanel : BasePanel
     {
         base.Awake();
     }
-
     public override void ClickButton(string controlName)
     {
         base.ClickButton(controlName);
@@ -36,8 +35,7 @@ public class FixShopPanel : BasePanel
                 {
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixPart_NeedParts);
                     UI_ShowPart.Instance.FixMe();//修复显示零件
-                    controlDic["CorrectShowFixAmountButton"].GetComponent<Button>().interactable = false;
-                    controlDic["CorrectShowFixAmountButton"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
+                    SetCompleteFxi("CorrectShowFixAmountButton");
                     FixProcess.Instance.UpdateFixProcess(0.15f);
                 }
                 else
@@ -48,15 +46,25 @@ public class FixShopPanel : BasePanel
                 {
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.StartShowPrompttext_PartneedPart);
                     PlayerManager.instance.IsStartShowPrompttext_part = true;
-                    controlDic["CorrectShowGetFixAmountButton"].GetComponent<Button>().interactable = false;
-                    controlDic["CorrectShowGetFixAmountButton"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
+                    SetCompleteFxi("CorrectShowGetFixAmountButton");
                     FixProcess.Instance.UpdateFixProcess(0.1f);
                 }
                 else
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "CountCorrectButton"://显示当前的生命
-
+                if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixShowPlayerHealthNeedPart)
+                {
+                    //如果零件够
+                    UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixShowPlayerHealthNeedPart);//消耗
+                    PlayerManager.instance.IsFixShowPlayerHealth = true;
+                    //调用更新
+                    UI_healthslider.instance.UpdateHeathBar();//更新血量
+                    SetCompleteFxi("CountCorrectButton");
+                    FixProcess.Instance.UpdateFixProcess(0.1f);
+                }
+                else
+                    UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "FixVolumeButton"://修复音量问题
 
@@ -64,17 +72,27 @@ public class FixShopPanel : BasePanel
             case "CorrectShowShopButton"://显示玩家当前金币数量
                 if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.IsFixShowGold_NeedPart)
                 {
+
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.IsFixShowGold_NeedPart);
                     UI_ShowGold.Instance.FixMe();//修复显示金币
-                    controlDic["CorrectShowShopButton"].GetComponent<Button>().interactable = false;
-                    controlDic["CorrectShowShopButton"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
+                    SetCompleteFxi("CorrectShowShopButton");
                     FixProcess.Instance.UpdateFixProcess(0.1f);
                 }
                 else
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "FixTelevisionCatonButton"://修复电视机的显示问题
-
+                if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixCcenceEffector_NeedPart)
+                {
+                    UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixCcenceEffector_NeedPart);
+                    PlayerManager.instance.FixCcenceEffector = true;
+                    SetCompleteFxi("FixTelevisionCatonButton");
+                    //调用屏幕修复
+                    CRTPostEffecter.instance.FixCRTEffect_MediumVintage();//减弱效果
+                    FixProcess.Instance.UpdateFixProcess(0.1f);
+                }
+                else
+                    UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "FixExitGameButton"://修复退出游戏按钮
                 if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.IsFixExitButton_NeedParts)
@@ -82,8 +100,7 @@ public class FixShopPanel : BasePanel
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.IsFixExitButton_NeedParts);
                     PlayerManager.instance.IsFixExitButton = true;//修复退出按钮
                     UImanager.Instance.GetPanel<televisionPanel>().SetFIxExitButton();//设置退出按钮可用
-                    controlDic["FixExitGameButton"].GetComponent<Button>().interactable = false;
-                    controlDic["FixExitGameButton"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
+                    SetCompleteFxi("FixExitGameButton");
                     FixProcess.Instance.UpdateFixProcess(0.2f);
                 }
                 else
@@ -91,6 +108,12 @@ public class FixShopPanel : BasePanel
                 break;
 
         }
+    }
+
+    private void SetCompleteFxi(string Name)
+    {
+        controlDic[Name].GetComponent<Button>().interactable = false;
+        controlDic[Name].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
     }
 
     public override void Start()
@@ -102,5 +125,24 @@ public class FixShopPanel : BasePanel
         controlDic["CorrectShowGetFixAmountButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.StartShowPrompttext_PartneedPart.ToString() + "P";
         controlDic["CorrectShowGetMoneyButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.StartShowPrompttext_GoldneedPart.ToString() + "P";
         controlDic["CorrectShowFixAmountButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.FixPart_NeedParts.ToString() + "P";
+
+        //最开始进行判断是否失活按钮
+        if(PlayerManager.instance.IsObtainShowPart)//如果已经解锁了显示
+            SetCompleteFxi("CorrectShowFixAmountButton");
+        if (PlayerManager.instance.IsFixExitButton)//如果修复了退出按钮
+            SetCompleteFxi("FixExitGameButton");
+        if (PlayerManager.instance.IsObtainShowGoldSkill)//如果已经获得金币显示
+            SetCompleteFxi("CorrectShowShopButton");
+        if (PlayerManager.instance.IsStartShowPrompttext_Gold)
+        {
+            controlDic["CorrectShowGetMoneyButton"].GetComponent<Button>().interactable = false;
+            controlDic["CorrectShowGetMoneyButton"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
+        };
+        if (PlayerManager.instance.IsStartShowPrompttext_part)
+            SetCompleteFxi("CorrectShowGetFixAmountButton");
+        if(PlayerManager.instance.IsFixShowPlayerHealth)
+            SetCompleteFxi("CountCorrectButton");
+        if(PlayerManager.instance.FixCcenceEffector)
+            SetCompleteFxi("FixTelevisionCatonButton");
     }
 }

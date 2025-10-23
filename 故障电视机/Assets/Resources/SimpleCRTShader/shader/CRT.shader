@@ -220,8 +220,9 @@ Shader "Simple CRT"
                 /////
 
                 /////Scanline
-               float scanline = sin((i.uv.y + _Time.x) * 1200.0.0) * 0.01;
-color -= scan  line * _ScanlineOnOff;
+                // ÐÞ¸´ÕâÁ½ÐÐ£º
+                float scanline = sin((i.uv.y + _Time.x) * 1200.0) * 0.01;  // ÐÞ¸´£º1200.0.0 -> 1200.0
+                color -= scanline * _ScanlineOnOff;  // ÐÞ¸´£ºscan  line -> scanline
                 /////
 
                 //////scanline noise

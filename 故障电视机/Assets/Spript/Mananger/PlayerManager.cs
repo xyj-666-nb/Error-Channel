@@ -32,7 +32,7 @@ public class PlayerManager : MonoBehaviour
     public bool IsFixExitButton = false;//是否有修复退出按钮
     public int IsFixExitButton_NeedParts = 20;//修复退出按钮所需零件数量
     public bool IsObtainShowGoldSkill = true;//是否获得金币显示
-    //public
+ 
 
     //关于升级相关
     public int AvancedCardAmount_NeedMoney = 100;//升级额外卡牌所需金币数量
@@ -50,6 +50,12 @@ public class PlayerManager : MonoBehaviour
     public int StartShowPrompttext_GoldneedPart = 5;
     public bool IsStartShowPrompttext_part = false;
     public int StartShowPrompttext_PartneedPart = 5;
+
+    public bool IsFixShowPlayerHealth = false;
+    public int FixShowPlayerHealthNeedPart = 5;
+
+    public bool FixCcenceEffector = false;
+    public int FixCcenceEffector_NeedPart = 10;
     public void Awake()
     {
         if (instance == null)
@@ -143,7 +149,7 @@ public class PlayerManager : MonoBehaviour
             CurrentHealth = MaxHealth;
         else if (CurrentHealth < 0)
             CurrentHealth = 0;
-        UI_healthslider.instance.UpdateHeathBar(CurrentHealth, MaxHealth);
+        UI_healthslider.instance.UpdateHeathBar();
     }
 
 
@@ -170,7 +176,7 @@ public class PlayerManager : MonoBehaviour
     {
         foreach (var card in HandCardManger.Instance.HandCardList)
         {
-            card.GetComponent<Card>().RefreshData();//刷新玩家手牌数据
+            card.GetComponentInChildren<Card>().RefreshData();//刷新玩家手牌数据
         }
 
         //敌人数据刷新

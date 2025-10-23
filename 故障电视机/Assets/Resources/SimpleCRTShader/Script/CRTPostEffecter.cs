@@ -1,9 +1,13 @@
+using DG.Tweening;
 using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
 public class CRTPostEffecter : MonoBehaviour
 {
+    private static CRTPostEffecter Instance;
+    public static CRTPostEffecter instance => Instance;
+
     public Material material;
     public int whiteNoiseFrequency = 1;
     public float whiteNoiseLength = 0.1f;
@@ -85,7 +89,10 @@ public class CRTPostEffecter : MonoBehaviour
     private int _FilmDirtTex;
     private int _EffectRange;
     #endregion
-
+    private void Awake()
+    {
+        Instance = this;
+    }
     private void Start()
     {
         _WhiteNoiseOnOff = Shader.PropertyToID("_WhiteNoiseOnOff");
@@ -116,8 +123,81 @@ public class CRTPostEffecter : MonoBehaviour
         _EffectRange = Shader.PropertyToID("_EffectRange");
     }
 
+    // ====================================== 新增：修复效果函数 ======================================
+    /// <summary>
+    /// 调用后减弱CRT效果（调整指定参数至低强度状态）
+    /// </summary>
+    /// <summary>
+    /// 直接关闭大部分效果，仅保留极淡基础效果（立刻见效）
+    /// </summary>
+    /// <summary>
+    /// 修复后效果：保留老式电视机复古感（淡扫描线/弱色差），去除故障抖动/杂乱
+    /// </summary>
+    /// <summary>
+    /// 修复后效果：保留明显的老式电视复古感（中等强度），无故障杂乱
+    /// </summary>
+    public void FixCRTEffect_MediumVintage()
+    {
+        // ====================================== 1. 坚决关闭“故障类效果”（不允许杂乱回归）
+        isSlippage = false;          // 关闭画面滑动/偏移（故障核心，必须关）
+        isFilmDirt = false;          // 关闭胶片污渍（避免脏污感）
+        isMultipleGhost = false;     // 关闭多重鬼影（防止画面叠影混乱）
+        isDecalTex = false;          // 关闭额外贴图干扰
+        screenJumpFrequency = 0;     // 彻底关闭屏幕跳动
+        screenJumpLength = 0.001f;   // 防误触发
+
+
+        // ====================================== 2. 增强“复古核心效果”（比之前稍重，保持自然）
+        // ① 扫描线（老式电视最核心标志，调至中等密度，清晰可见但不刺眼）
+        isScanline = true;
+        // （若Shader支持扫描线强度，可在Shader中调大“线密度”，比如从10→20，让线更明显）
+
+        // ② 色差（边缘偏色更明显，增强复古感，但不杂乱）
+        isChromaticAberration = true;
+        chromaticAberrationStrength = 0.001f;  // 比之前的0.0003f稍强（原故障值0.005f）
+
+        // ③ 底噪（轻微白噪音，模拟老式电视的“沙沙”底噪感，偶尔出现）
+        whiteNoiseFrequency = 2;     // 低频率（1000帧里出现2次）
+        whiteNoiseLength = 0.1f;     // 每次持续0.1秒（极短，不干扰观看）
+
+        // ④ 闪烁（轻微电流波动，比之前稍明显，但稳定）
+        flickeringStrength = 0.0005f;  // 比之前的0.0001f稍强（原故障值0.002f）
+        flickeringCycle = 150f;        // 周期适中，避免高频闪烁
+
+
+        // ====================================== 3. 可选：轻微保留低分辨率（增强复古颗粒感）
+        isLowResolution = true;
+        resolutions = new Vector2Int(960, 540);  // 半高清（比原故障的更低分辨率清晰，保留颗粒感）
+
+
+        // ====================================== 4. 同步Shader参数，确保效果生效
+        if (material != null)
+        {
+            // 故障类效果：强制关闭
+            material.SetInteger(_SlippageOnOff, 0);
+            material.SetInteger(_FilmDirtOnOff, 0);
+            material.SetInteger(_MultipleGhostOnOff, 0);
+            material.SetFloat(_ScreenJumpLevel, 0);
+
+            // 复古类效果：同步增强后的参数
+            material.SetInteger(_ScanlineOnOff, 1);
+            material.SetFloat(_ChromaticAberrationStrength, chromaticAberrationStrength);
+            material.SetFloat(_FlickeringStrength, flickeringStrength);
+            material.SetInteger(_WhiteNoiseOnOff, whiteNoiseFrequency > 0 ? 1 : 0);
+        }
+
+        Debug.Log("修复完成：保留中等强度复古感，明显的老式电视质感，无故障杂乱");
+    }
+    // ==============================================================================================
+
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
+        if (material == null)  // 防止material未赋值导致报错
+        {
+            Graphics.Blit(src, dest);
+            return;
+        }
+
         material.SetVector(_EffectRange, new Vector4(
             effectRange.x,
             effectRange.y,
@@ -202,20 +282,5 @@ public class CRTPostEffecter : MonoBehaviour
             Graphics.Blit(src, dest, material);
         }
         //////
-    }
-
-    // 强制绘制青色边框（移除所有条件判断，确保一定显示）
-    private void OnDrawGizmos()
-    {
-        Debug.Log("OnDrawGizmos 被调用了！");
-        Handles.color = Color.cyan;
-        // 绘制屏幕中间50%区域的线框（像素坐标）
-        float x = 0.25f * Screen.width;
-        float y = 0.25f * Screen.height;
-        float width = 0.5f * Screen.width;
-        float height = 0.5f * Screen.height;
-        Handles.DrawWireCube(new Vector3(x + width / 2, y + height / 2, 0), new Vector3(width, height, 0));
-        Handles.color = Color.red;
-        Handles.DrawSolidDisc(new Vector3(x + width / 2, y + height / 2, 0), Vector3.forward, 5f);
     }
 }

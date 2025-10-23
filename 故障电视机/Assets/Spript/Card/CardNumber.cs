@@ -14,4 +14,9 @@ public class CardNumber : MonoBehaviour
         EquationText.text = _NumberText;
     }
 
+    public void SetActiveNumber(bool IsActive)
+    {
+            EquationText.gameObject.SetActive(IsActive);
+    }
+
 }

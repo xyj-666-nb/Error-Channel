@@ -186,6 +186,7 @@ public class HandCardManger : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         Card.IsAnimator = false;//动画播放完毕
         Card.SetOriginalPos(Pos);//设置卡牌的初始位置
+        //Card.Flip();//再次翻转
     }
 
     //——————————给出敌人牌组——————————

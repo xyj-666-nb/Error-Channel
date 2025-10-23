@@ -11,7 +11,6 @@ public class EnemyCard : MonoBehaviour
     public static EnemyCard CurrentEnemyCard;
     //µÐÈË¿¨ÅÆ
     [SerializeField]private SpriteRenderer BackGround;
-    [SerializeField] private SpriteRenderer ContentImage;
     public TextMeshProUGUI NumberText;
     public int Number=0;
 

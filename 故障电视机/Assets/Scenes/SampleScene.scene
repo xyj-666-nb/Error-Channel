@@ -275,7 +275,7 @@ PrefabInstance:
       addedObject: {fileID: 72249103}
     - targetCorrespondingSourceObject: {fileID: 363065004136662753, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 848088372}
+      addedObject: {fileID: 848088378}
   m_SourcePrefab: {fileID: 100100000, guid: 2381d1cd85c60a14ba46698b3ea3a9a7, type: 3}
 --- !u!1 &275668337 stripped
 GameObject:
@@ -358,8 +358,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CurrentHealth: 10
   MaxHealth: 10
-  PlayerCurrentGold: 0
-  PlayerParts: 100
+  PlayerCurrentGold: 1000
+  PlayerParts: 1000
   CurrentFixProcess: 0
   MaxCardAmount: 5
   CurrentLevel: 0
@@ -382,6 +382,10 @@ MonoBehaviour:
   StartShowPrompttext_GoldneedPart: 5
   IsStartShowPrompttext_part: 0
   StartShowPrompttext_PartneedPart: 5
+  IsFixShowPlayerHealth: 0
+  FixShowPlayerHealthNeedPart: 5
+  FixCcenceEffector: 0
+  FixCcenceEffector_NeedPart: 10
 --- !u!114 &510407840
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -502,14 +506,14 @@ MonoBehaviour:
   CurrentLeveInfo:
     PlayerNumberInfo: []
     EnemyNumberInfo: []
---- !u!114 &848088372
+--- !u!114 &848088378
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 275668337}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cbe347f49d2f8a04d913547329b97143, type: 3}
   m_Name: 
@@ -525,14 +529,14 @@ MonoBehaviour:
   flickeringCycle: 111
   isSlippage: 1
   isSlippageNoise: 1
-  slippageStrength: 0.005
+  slippageStrength: 0.002
   slippageInterval: 1
   slippageScrollSpeed: 33
   slippageSize: 11
-  chromaticAberrationStrength: 0.005
+  chromaticAberrationStrength: 0.002
   isChromaticAberration: 1
   isMultipleGhost: 1
-  multipleGhostStrength: 0.01
+  multipleGhostStrength: 0.005
   isScanline: 1
   isMonochrome: 0
   isLetterBox: 0
@@ -548,10 +552,10 @@ MonoBehaviour:
   resolutions: {x: 0, y: 0}
   effectRange:
     serializedVersion: 2
-    x: 0.2
-    y: 0.2
-    width: 0.6
-    height: 0.6
+    x: 0.161
+    y: 0
+    width: 0.675
+    height: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

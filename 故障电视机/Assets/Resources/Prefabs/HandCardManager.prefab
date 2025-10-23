@@ -503,7 +503,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxHandCardCount: 4
   HandCardList: []
-  HandCarPrefabs: {fileID: 466015306969171052, guid: a51f88e6f3b0aec4fa0e2a34d524d0d3, type: 3}
+  HandCarPrefabs: {fileID: 416926515908789628, guid: f588d38a5f7472646a634570a0346b61, type: 3}
   spawnPoint: {fileID: 747475292845903627}
   SplineContainer_getCard: {fileID: 7678275773905645984}
   SplineContainer_PushCard: {fileID: 7571017623760236680}

@@ -94,9 +94,61 @@ public class televisionPanel : BasePanel
                 //失活自己
                 controlDic["CallAutoCalculatorButton"].gameObject.SetActive(false);
                 break;
+            case "FlipCardButton":
+                if(Card.CurrentSelectedCard!=null)
+                    Card.CurrentSelectedCard.Flip();//进行翻转
+                break;
+
+            case "FlipAllCardButton":
+                StartCoroutine(FlipAllCard());
+                break;
         }
 
     }
+
+    IEnumerator FlipAllCard()
+    {
+        foreach(var Card in HandCardManger.Instance.HandCardList)
+        {
+            Card.GetComponentInChildren<Card>()?.Flip();
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+
+    public void SetCanShowCardFlip(bool IsShow)//显示卡片翻转的按钮
+    {
+        // 终止所有相关动画
+        var flipButton = controlDic["FlipCardButton"].gameObject;
+        var buttonImage = flipButton.GetComponent<Image>();
+        var buttonText = flipButton.GetComponentInChildren<TextMeshProUGUI>();
+
+        buttonImage.DOKill();    // 终止按钮图片动画
+        buttonText.DOKill();     // 终止文本动画
+
+        if (IsShow)
+        {
+            // 显示时：先激活按钮，再执行淡入
+            if (!flipButton.activeSelf)
+                flipButton.SetActive(true);
+
+            buttonImage.DOFade(1, 0.6f);
+            buttonText.DOFade(1, 0.6f);
+        }
+        else
+        {
+            //  隐藏时：淡入完成后再禁用按钮
+            // 使用Sequence确保透明度动画同步完成
+            DOTween.Sequence()
+                .Append(buttonImage.DOFade(0, 0.6f))
+                .Join(buttonText.DOFade(0, 0.6f))
+                .OnComplete(() =>
+                {
+                    if (flipButton.activeSelf)
+                        flipButton.SetActive(false);
+                });
+        }
+    }
+
 
     public void ChangeLevelText(GameLevel Level)
     {
@@ -134,14 +186,15 @@ public class televisionPanel : BasePanel
         controlDic["ExitButton"].gameObject.GetComponent<Image>().DOFade(1f, 1f);
         controlDic["ExitButton"].GetComponentInChildren<TextMeshProUGUI>().DOFade(1f, 1f);
         controlDic["ExitButton"].GetComponent<Button>().interactable = true;//可以交互
-
-
     }
-
 
     protected override void Update()
     {
         base.Update();
+        if (Card.CurrentSelectedCard != null && controlDic["FlipCardButton"].gameObject.activeSelf == false)
+            SetCanShowCardFlip(true);
+        else if (Card.CurrentSelectedCard == null && controlDic["FlipCardButton"].gameObject.activeSelf == true)
+            SetCanShowCardFlip(false);
     }
 
     public void SetRecycleAreaActive(bool IsActive)
