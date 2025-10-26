@@ -43,9 +43,9 @@ public class UI_ShowGold : MonoBehaviour
         targetGold = PlayerManager.instance.PlayerCurrentGold;
 
         if (PlayerManager.instance.IsObtainShowGoldSkill)
-            goldText.text = $"金币：{currentGold}$";
+            goldText.text = $"：{currentGold}$";
         else
-            goldText.text = "金币：##?$";
+            goldText.text = "：##?$";
 
         // 新增：初始化提示文本
         if (PromptText != null)
@@ -59,7 +59,7 @@ public class UI_ShowGold : MonoBehaviour
         PlayerManager.instance.IsObtainShowGoldSkill = true;
         currentGold = PlayerManager.instance.PlayerCurrentGold;
         targetGold = PlayerManager.instance.PlayerCurrentGold;
-        goldText.text = $"金币：{currentGold}$";
+        goldText.text = $"：{currentGold}$";
     }
 
     public void UpdateGold(int gold)
@@ -67,7 +67,7 @@ public class UI_ShowGold : MonoBehaviour
         if (!PlayerManager.instance.IsObtainShowGoldSkill)
         {
             // 未获得技能：立即显示未知，终止所有动画和延迟
-            goldText.text = "金币：##?";
+            goldText.text = "：##?";
             targetGold = currentGold;
             goldTween?.Kill();
             if (delayGoldCoroutine != null)
@@ -111,7 +111,7 @@ public class UI_ShowGold : MonoBehaviour
                 value =>
                 {
                     currentGold = value;
-                    goldText.text = $"金币：{currentGold}";
+                    goldText.text = $"：{currentGold}";
                 },
                 targetGold,
                 totalDuration
@@ -120,7 +120,7 @@ public class UI_ShowGold : MonoBehaviour
             .OnComplete(() =>
             {
                 currentGold = targetGold;
-                goldText.text = $"金币：{currentGold}";
+                goldText.text = $"：{currentGold}";
             });
 
         // 协程结束，清空引用
@@ -129,7 +129,7 @@ public class UI_ShowGold : MonoBehaviour
 
     public void RecycleGold(GameObject Gold, GameObject Prefabs)
     {
-        Gold.transform.DOMove(RecycleGoldPos.position, 0.5f)
+        Gold.transform.DOMove(RecycleGoldPos.position, Random.Range(0.3f, 0.6f))
             .SetEase(Ease.InBack)
             .OnComplete(() =>
             {
@@ -199,7 +199,6 @@ public class UI_ShowGold : MonoBehaviour
         currentPromptTween = null;
     }
 
-    // 新增：强制立即隐藏提示文本的方法
     public void HidePromptImmediately()
     {
         if (currentPromptCoroutine != null)

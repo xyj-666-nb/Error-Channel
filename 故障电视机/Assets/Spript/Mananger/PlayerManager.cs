@@ -42,7 +42,13 @@ public class PlayerManager : MonoBehaviour
     public int  GetAutoCulCaltorNeedMoney=500;//获得自动计算器技能所需金币数量
 
     [SerializeField]private List<int> LevelCangetGoldList = new List<int>() { 1, 5, 10, 25, 50 };//每个难度可获得的金币数量
-    public List<int> AdvanceLevelNeedMoney=new List<int>() { 20, 100, 250, 500 };//升级所需金币数量
+    public List<int> AdvanceLevelNeedMoney = new List<int> {
+    100,  // Level1 (索引0)
+    200,  // Level2 (索引1)  
+    300,  // Level3 (索引2)
+    400,  // Level4 (索引3)
+    500   // Level5 (索引4) 
+};
     public int CurrentLevelCanGetGold = 1;//当前难度可获得金币数量
     public int CurrenWinningStreak = 0;//当前连胜数
 
@@ -56,6 +62,9 @@ public class PlayerManager : MonoBehaviour
 
     public bool FixCcenceEffector = false;
     public int FixCcenceEffector_NeedPart = 10;
+
+    public bool FixVolume=false;
+    public int FixVolumeNeedPart = 5;
     public void Awake()
     {
         if (instance == null)
@@ -94,7 +103,12 @@ public class PlayerManager : MonoBehaviour
             AddPart();//三连胜获得零件,之后每胜利获得一个零件
             Slider_Part.instance.GetPart(1);
             UI_ShowPart.Instance.UpdatePartText();
+            //播放音效
+            MusicManager.Instance.PlayEffectMusic("Music/成功收集到零件", false);//播放噪音
         }
+
+        //播放成功音效
+        MusicManager.Instance.PlayEffectMusic("Music/对比成功", false);
 
         //发放钱币奖励
         GetGoldArea.Instance.CreateGold(CurrentLevelCanGetGold);
@@ -156,13 +170,9 @@ public class PlayerManager : MonoBehaviour
     public void AddGameLevel()
     {
         CurrentLevel++;
-        UImanager.Instance.GetPanel<televisionPanel>().ChangeLevelText(CurrentLevel);
-        //刷新一些数据，加载一些根据等级改变而改变的数据
-        CardNumberInfo.Instance.ChangeLevelData(CurrentLevel);//改变数据的来源
+        RefreshLevel();
         //刷新一下手牌数据
         ReFreshCardNumber();
-        //当前胜利的金币获取数
-        CurrentLevelCanGetGold = LevelCangetGoldList[(int)CurrentLevel];
 
         //调用手牌按钮激活
         if (UImanager.Instance.GetPanel<AdvanceShopPanel>())
@@ -172,6 +182,14 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void RefreshLevel()
+    {
+        UImanager.Instance.GetPanel<televisionPanel>().ChangeLevelText(CurrentLevel);
+        //刷新一些数据，加载一些根据等级改变而改变的数据
+        CardNumberInfo.Instance.ChangeLevelData(CurrentLevel);//改变数据的来源
+        //当前胜利的金币获取数
+        CurrentLevelCanGetGold = LevelCangetGoldList[(int)CurrentLevel];
+    }
     public void ReFreshCardNumber()
     {
         foreach (var card in HandCardManger.Instance.HandCardList)

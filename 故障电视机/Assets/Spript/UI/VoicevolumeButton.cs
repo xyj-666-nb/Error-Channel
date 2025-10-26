@@ -8,6 +8,9 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 public class VoicevolumeButton : MonoBehaviour
 {
+    private static VoicevolumeButton instance;
+    public static VoicevolumeButton Instance=>instance;
+
     [SerializeField] private Button me;
     [SerializeField] private float speed = 5;
     [SerializeField] private TextMeshProUGUI promptText; // 提示文本
@@ -16,8 +19,11 @@ public class VoicevolumeButton : MonoBehaviour
     private Camera mainCamera;
     private bool isDragging = false;
 
+    private AudioSource audioSource;
+
     private void Awake()
     {
+        instance = this;
         // 获取主相机
         mainCamera = Camera.main;
 
@@ -25,7 +31,18 @@ public class VoicevolumeButton : MonoBehaviour
         if (mainCamera == null)
             mainCamera = FindObjectOfType<Camera>();
 
-        collider=GetComponent<CircleCollider2D>();
+        collider = GetComponent<CircleCollider2D>();
+        SetButton(false);//不让交互
+    }
+    public void getaudio(AudioSource Sources)
+    {
+        audioSource=Sources;
+    }
+
+
+    public void SetButton(bool IsCan)
+    {
+        me.interactable = IsCan;
     }
 
     private void Update()
@@ -64,23 +81,35 @@ public class VoicevolumeButton : MonoBehaviour
         if (IsTouchOnButton(touchWorldPos))
         {
             isDragging = true;
+            if (!PlayerManager.instance.FixVolume)
+            {
+                MusicManager.Instance.PlayEffectMusic("Music/噪音", false, getaudio);//播放噪音
+            }
         }
     }
 
     private void OnTouchMoved(Touch touch)
     {
-        if (!isDragging ) return;
+        if (!isDragging) return;
 
         Vector2 touchWorldPos = mainCamera.ScreenToWorldPoint(touch.screenPosition);
+
         RotateKnob(touchWorldPos);
         promptText.gameObject.SetActive(true);
-        promptText.text = GetPrecentage();
+        if (!PlayerManager.instance.FixVolume)
+            promptText.text = "*#？";
+        else
+            promptText.text = GetPrecentage();
     }
 
     private void OnTouchEnded(Touch touch)
     {
         promptText.gameObject.SetActive(false);
         isDragging = false;
+        if (!PlayerManager.instance.FixVolume)
+        {
+            MusicManager.Instance.StopEffectMusic(audioSource);//停止
+        }
     }
 
     private bool IsTouchOnButton(Vector2 worldPosition)
@@ -97,7 +126,6 @@ public class VoicevolumeButton : MonoBehaviour
     private void RotateKnob(Vector2 touchPosition)
     {
         if (promptImageObj == null) return;
-
         // 计算旋钮中心到触摸点的方向
         Vector2 direction = touchPosition - (Vector2)promptImageObj.transform.position;
 
@@ -124,10 +152,10 @@ public class VoicevolumeButton : MonoBehaviour
         isDragging = false;
     }
 
-    // 获取当前旋转角度（0-360度）
+    // 获取当前旋转角度
     public float GetCurrentAngle()
     {
-        if (promptImageObj == null) 
+        if (promptImageObj == null)
             return 0f;
         return promptImageObj.transform.eulerAngles.z;
     }
@@ -135,12 +163,14 @@ public class VoicevolumeButton : MonoBehaviour
     // 获取标准化值
     public float GetNormalizedValue()
     {
-        return GetCurrentAngle() / 360f;
+        float angle = GetCurrentAngle();
+        // 将角度反转：0度对应100%，360度对应0%
+        return 1f - (angle / 360f);
     }
 
     public string GetPrecentage()
     {
-        return ((int)(GetNormalizedValue() * 100f)).ToString() +"%";
+        return ((int)(GetNormalizedValue() * 100f)).ToString() + "%";
     }
 
     // 设置旋钮角度

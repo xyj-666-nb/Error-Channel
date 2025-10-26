@@ -69,6 +69,8 @@ public class Card : MonoBehaviour
         );
         BackGround.transform.DORotate(targetLocalRot, 0.25f, (RotateMode)Space.Self);
         StartCoroutine(WaitTime());
+        //设置翻牌音效
+        MusicManager.Instance.PlayEffectMusic("Music/扑克翻牌", false);
     }
 
     IEnumerator WaitTime()
@@ -83,11 +85,16 @@ public class Card : MonoBehaviour
         CardNumberInfo.Instance.GetEquationString(this);
     }
 
+    // 在Card类的setLayer方法中，强制统一Z轴
     public void setLayer(int i)
     {
-        int baseOrder = i * 10;
+        int baseOrder = i;
         GetComponent<SpriteRenderer>().sortingOrder = baseOrder;
         MyCanvas.sortingOrder = baseOrder + 1;
+        MyCanvas.overrideSorting = true;
+
+        // 关键：统一Z轴坐标，消除Z轴对渲染顺序的影响
+        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
     }
 
     public void RefreshData()

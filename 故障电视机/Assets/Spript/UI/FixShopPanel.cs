@@ -16,6 +16,7 @@ public class FixShopPanel : BasePanel
         switch(controlName)
         {
             case "CorrectShowGetMoneyButton"://玩家胜利获取的金币
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
 
                 if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.StartShowPrompttext_GoldneedPart)
                 {
@@ -31,6 +32,7 @@ public class FixShopPanel : BasePanel
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "CorrectShowFixAmountButton"://显示当前修复零件数量
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixPart_NeedParts)
                 {
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixPart_NeedParts);
@@ -42,7 +44,8 @@ public class FixShopPanel : BasePanel
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "CorrectShowGetFixAmountButton"://玩家胜利获取的修复零件
-                if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.StartShowPrompttext_PartneedPart)
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.StartShowPrompttext_PartneedPart)
                 {
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.StartShowPrompttext_PartneedPart);
                     PlayerManager.instance.IsStartShowPrompttext_part = true;
@@ -53,7 +56,8 @@ public class FixShopPanel : BasePanel
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "CountCorrectButton"://显示当前的生命
-                if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixShowPlayerHealthNeedPart)
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixShowPlayerHealthNeedPart)
                 {
                     //如果零件够
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixShowPlayerHealthNeedPart);//消耗
@@ -67,9 +71,20 @@ public class FixShopPanel : BasePanel
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "FixVolumeButton"://修复音量问题
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixVolumeNeedPart)
+                {
+                    //如果零件够
+                    UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixVolumeNeedPart);//消耗
+                    PlayerManager.instance.FixVolume = true;
+                    VoicevolumeButton.Instance.SetButton(true);
+                    SetCompleteFxi("FixVolumeButton");
+                    FixProcess.Instance.UpdateFixProcess(0.15f);
+                }
 
                 break;
             case "CorrectShowShopButton"://显示玩家当前金币数量
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.IsFixShowGold_NeedPart)
                 {
 
@@ -82,7 +97,8 @@ public class FixShopPanel : BasePanel
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "FixTelevisionCatonButton"://修复电视机的显示问题
-                if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixCcenceEffector_NeedPart)
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.FixCcenceEffector_NeedPart)
                 {
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.FixCcenceEffector_NeedPart);
                     PlayerManager.instance.FixCcenceEffector = true;
@@ -95,7 +111,8 @@ public class FixShopPanel : BasePanel
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "零件数量不够");
                 break;
             case "FixExitGameButton"://修复退出游戏按钮
-                if(PlayerManager.instance.PlayerParts >= PlayerManager.instance.IsFixExitButton_NeedParts)
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                if (PlayerManager.instance.PlayerParts >= PlayerManager.instance.IsFixExitButton_NeedParts)
                 {
                     UI_ShowPart.Instance.ConsumePartEffect(PlayerManager.instance.IsFixExitButton_NeedParts);
                     PlayerManager.instance.IsFixExitButton = true;//修复退出按钮
@@ -144,5 +161,7 @@ public class FixShopPanel : BasePanel
             SetCompleteFxi("CountCorrectButton");
         if(PlayerManager.instance.FixCcenceEffector)
             SetCompleteFxi("FixTelevisionCatonButton");
+        if(PlayerManager.instance.FixVolume)
+            SetCompleteFxi("FixVolumeButton");
     }
 }

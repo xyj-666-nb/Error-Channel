@@ -129,7 +129,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.6046801, y: -1.6559132, z: 0.11386657}
-  m_LocalScale: {x: 0.79999995, y: 0.8, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8745904189027032746}
@@ -214,8 +214,8 @@ MonoBehaviour:
   IsChoose: 0
   IsAnimator: 0
   BackGround: {fileID: 4061406864501941865}
-  MoveDistance: 1
-  ScaleSize: 1.2
+  MoveDistance: 0.6
+  ScaleSize: 1.1
   AnimDuration: 0.7
   MyNumber: {fileID: 2385212710610311542}
   MyCanvas: {fileID: 7425596590410871672}
@@ -512,10 +512,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 4500855563971463640}
   m_LocalEulerAnglesHint: {x: 180, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0000063180923, y: -0.000017881393}
-  m_SizeDelta: {x: 0.000013351, y: 0.000035763}
+  m_AnchorMin: {x: 0.033880956, y: 0}
+  m_AnchorMax: {x: 0.93500006, y: 1}
+  m_AnchoredPosition: {x: 0.033809096, y: -0.000017881393}
+  m_SizeDelta: {x: 0.21512088, y: 0.000035763}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7064300969854479190
 CanvasRenderer:
@@ -545,7 +545,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 5
+  m_text: 78*34
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -572,12 +572,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 1
+  m_fontSize: 0.7
   m_fontSizeBase: 0.6
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 0
-  m_fontSizeMax: 1
+  m_fontSizeMax: 0.8
   m_fontStyle: 0
   m_HorizontalAlignment: 32
   m_VerticalAlignment: 4096
@@ -608,7 +608,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0.076636314, y: 0, z: 0.14232367, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

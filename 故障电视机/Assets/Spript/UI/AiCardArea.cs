@@ -2,6 +2,7 @@ using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AiCardArea : MonoBehaviour
 {
@@ -12,12 +13,14 @@ public class AiCardArea : MonoBehaviour
     [SerializeField] private televisionPanel MyPanel;
     [SerializeField] private Transform PushPos;
 
+    private Image AreaImage;
     public bool IsTrigger;
 
     private void Awake()
     {
         _instance = this;
         IsTrigger = false;
+        AreaImage=GetComponent<Image>();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -63,5 +66,10 @@ public class AiCardArea : MonoBehaviour
                 else
                     PlayerManager.instance.PlayerWin(Card);//Íæ¼ÒÓ®
             });
+    }
+
+    private void Update()
+    {
+        AreaImage.color=Color.white;
     }
 }

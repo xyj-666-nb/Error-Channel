@@ -12,6 +12,10 @@ public class televisionPanel : BasePanel
     public Image pushCardArea;//打出卡牌区域图片
     [SerializeField] private TextMeshProUGUI ShowCurrentLevelText;
     [SerializeField] GameObject CallAutoButton;//呼唤计算器的按钮
+    [SerializeField] AnimatorControl AnimatorControl_Pass;
+    [SerializeField] AnimatorControl AnimatorControl_FixShop;
+    [SerializeField] AnimatorControl AnimatorControl_advance;
+    [SerializeField] AnimatorControl AnimatorControl_Exit;
     public override void Awake()
     {
         base.Awake();
@@ -47,24 +51,32 @@ public class televisionPanel : BasePanel
                 {
                     //随机抽出牌来回收
                     RecycleArea.Instance.RecycleCard(Card.CurrentSelectedCard);
-                    HandCardManger.Instance.CreatCard();//创建卡牌                          
+                    HandCardManger.Instance.CreatCard();//创建卡牌
+                    MusicManager.Instance.PlayEffectMusic("Music/单次拿牌", false);
                     PassPromptText.Instance.TriggerPass();//触发pass文本更新
+                    AnimatorControl_Pass.SetAnimatorStart(); //调用pass按钮的特效
+                    MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 }
                else
                {
+                    AnimatorControl_Pass.SetAnimatorStart(); //调用pass按钮的特效
                     //触发警告
                     UImanager.Instance.ShowPanel<WarnPanel>().SetText("注意！", "请选择你要更换的手牌");
                 }
-             
+
                 break;
             case "PushCardButton":
+
                 HandCardManger.Instance.PushCard(PushType.track);//打出卡牌
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 break;
                 case "AdvanceButton":
+                AnimatorControl_advance.SetAnimatorStart();
                 if (UImanager.Instance.GetPanel<AdvanceShopPanel>())
                 {
                     controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Advance Shop";
                     UImanager.Instance.HidePanel<AdvanceShopPanel>();//隐藏高级商店
+                    MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 }
                 else
                 {
@@ -75,10 +87,12 @@ public class televisionPanel : BasePanel
                
                 break;
             case "FixShopButton":
+                AnimatorControl_FixShop.SetAnimatorStart();
                 if (UImanager.Instance.GetPanel<FixShopPanel>())
                 {
                     controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Fix Shop";
                     UImanager.Instance.HidePanel<FixShopPanel>();//隐藏高级商店
+                    MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 }
                 else
                 {
@@ -88,18 +102,23 @@ public class televisionPanel : BasePanel
                 }
                 break;
             case "ExitButton":
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                AnimatorControl_Exit.SetAnimatorStart();
                 break;
             case "CallAutoCalculatorButton":
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 UImanager.Instance.ShowPanel<AutoCalculatorpanel>();//自动调用计算器面板
                 //失活自己
                 controlDic["CallAutoCalculatorButton"].gameObject.SetActive(false);
                 break;
             case "FlipCardButton":
-                if(Card.CurrentSelectedCard!=null)
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
+                if (Card.CurrentSelectedCard!=null)
                     Card.CurrentSelectedCard.Flip();//进行翻转
                 break;
 
             case "FlipAllCardButton":
+                MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 StartCoroutine(FlipAllCard());
                 break;
         }
@@ -152,7 +171,7 @@ public class televisionPanel : BasePanel
 
     public void ChangeLevelText(GameLevel Level)
     {
-        ShowCurrentLevelText.text="当前游戏难度：" +Level.ToString();
+        ShowCurrentLevelText.text=Level.ToString();
     }
 
     public void  CloseShop<T>(string CloseName,string ButtonName) where T:BasePanel

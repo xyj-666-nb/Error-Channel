@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.Splines;
 using DG.Tweening;
 using System.Collections;
-using System.Diagnostics.Contracts;//引入dotween插件
+using System.Diagnostics.Contracts;
+using UnityEngine.Events;//引入dotween插件
 
 public enum PushType { Touch,track }//1.是玩家触摸，2.是预设轨迹
 public class HandCardManger : MonoBehaviour
@@ -19,15 +20,9 @@ public class HandCardManger : MonoBehaviour
     [SerializeField]private SplineContainer SplineContainer_PushCard;//这里是打出卡牌的轨道
 
     [SerializeField]private Transform CardParent;//卡牌的父物体
-
-    private void Awake()
+   private void Awake()
     {
         instance = this;
-    }
-
-    private void Start()
-    {
-        InitCard();
     }
 
     public void AddCardMount()
@@ -42,6 +37,9 @@ public class HandCardManger : MonoBehaviour
 
     IEnumerator CreateInitCard()
     {
+        AudioSource audioSource = null;
+        //开启连续发牌
+        MusicManager.Instance.PlayEffectMusic("Music/连续发牌", false, (resources) => { audioSource = resources; });
         yield return new WaitForSeconds(0.2f);
         if(EnemyCard.CurrentEnemyCard==null)//为空才创建敌人卡牌
             GetEnemyCard();
@@ -51,6 +49,9 @@ public class HandCardManger : MonoBehaviour
             CreatCard();//创建手牌
             yield return new WaitForSeconds(0.2f);
         }
+        MusicManager.Instance.StopEffectMusic(audioSource);//暂停
+        //打开新手引导的对话
+        Main.Instance.InitDia.StartDialogue(1);//开启对话1
     }
 
     public void CreatCard()
@@ -81,7 +82,7 @@ public class HandCardManger : MonoBehaviour
             case PushType.Touch:
                 break;
             case PushType.track:
-                PushPlayerCard(pushedCard,0.3f);
+                PushPlayerCard(pushedCard,0.3f, pushedCard);
                 break;
         }
 
@@ -91,7 +92,7 @@ public class HandCardManger : MonoBehaviour
         Card.CurrentSelectedCard = null;
     }
 
-    public void PushPlayerCard(Card card,float _totalDuration)
+    public void PushPlayerCard(Card card,float _totalDuration,Card PushCard)
     {
         Spline trackSpline = SplineContainer_PushCard.Spline; // 获取曲线
         BezierKnot knot = trackSpline[0]; // 获取第一个节点
@@ -103,11 +104,16 @@ public class HandCardManger : MonoBehaviour
         knot.Position = curveLocalPos; // 赋值转换后的局部坐标
         trackSpline.SetKnot(0, knot); // 写回曲线
 
-        StartCoroutine(MoveCard(card.transform, SplineContainer_PushCard, _totalDuration)); // 启动移动协程
+        StartCoroutine(MoveCard(card.transform, SplineContainer_PushCard, _totalDuration, RecycleCard, PushCard)); // 启动移动协程
+    }
+
+    private void RecycleCard(Card PushCard)
+    {
+        AiCardArea.Instance.PushCard(PushCard);
     }
 
     //让物体沿着曲线移动的通用协程
-    IEnumerator MoveCard(Transform _transform, SplineContainer SplineTrack,float _totalDuration)
+    IEnumerator MoveCard(Transform _transform, SplineContainer SplineTrack,float _totalDuration,UnityAction<Card> CallBack=null,Card PushCard=null)
     {
         // 终止卡牌上所有残留的DOTween动画
         _transform.DOKill();
@@ -141,45 +147,44 @@ public class HandCardManger : MonoBehaviour
 
         Vector3 finalPos = splineContainerTrans.TransformPoint(spline.EvaluatePosition(1f));
         _transform.position = finalPos;
+        CallBack?.Invoke(PushCard);
     }
 
-    public void UpdateCardPosition()//更新卡牌的位置
+    public void UpdateCardPosition()
     {
         if (HandCardList.Count <= 0)
-            return;//如果手牌数量小于等于0，直接返回
-        //计算每张卡牌之间的曲线比例位置
-        float step = 1f / (MaxHandCardCount + 1);//计算每张卡牌之间的间隔比例，这里用算的是最小的间距
-        float FirstCardPos= 0.5f - step * (HandCardList.Count - 1) / 2f;
-        //首先这样写是为了两点，1.就是保证卡牌的位置居中，2.只要卡牌数量大于2张，其实第一张的位置就是零，那为什么不设置为零呢，这里要考虑到只有一张卡牌的情况
-        //为什么不是等于step呢，因为step是卡牌之间的间隔，如果等于step，那么当只有两张卡牌的时候，第一张卡牌的位置就是step，也就是1，这样就不居中，并且最后一张卡牌的位置就会超出范围
+            return;
 
-        //处理所有卡牌的位置
-        for (int i = 0; i < HandCardList.Count;i++)
+        if (Card.CurrentSelectedCard != null)//如果当前有选中的牌就直接归位
+            Card.CurrentSelectedCard.SetDeactivate();
+
+
+        // 计算每张卡牌在曲线上的位置（保持原有逻辑）
+        float step = 1f / (MaxHandCardCount + 1);
+        float firstCardPos = 0.5f - step * (HandCardList.Count - 1) / 2f;
+
+        // 遍历所有手牌，按列表顺序设置层级（i从0开始，依次递增）
+        for (int i = 0; i < HandCardList.Count; i++)
         {
-            float StartPos = FirstCardPos + step * i;//计算每张卡牌的位置
+            float startPos = firstCardPos + step * i;
 
-            //设置显示的层级
+            // 核心：传递当前索引i作为层级基础值（确保后一张牌i更大，层级更高）
             HandCardList[i].GetComponent<Card>().setLayer(i);
 
-            Vector3 localSplinePos = SplineContainer_getCard.Spline.EvaluatePosition(StartPos); // 1. 先获取曲线在自身局部空间的位置
-            // 2. 通过 SplineContainer 的 transform，将局部位置转换为世界位置
+            // （保持原有位置和旋转逻辑不变）
+            Vector3 localSplinePos = SplineContainer_getCard.Spline.EvaluatePosition(startPos);
             Vector3 worldSplinePos = SplineContainer_getCard.transform.TransformPoint(localSplinePos);
+            Vector3 forward = SplineContainer_getCard.Spline.EvaluateTangent(startPos);
+            Vector3 up = SplineContainer_getCard.Spline.EvaluateUpVector(startPos);
+            Quaternion rot = Quaternion.LookRotation(up, Vector3.Cross(up, forward).normalized);
 
-            UnityEngine.Vector3 forWard = SplineContainer_getCard.Spline.EvaluateTangent(StartPos);//获取卡牌在曲线上的切线方向
-            UnityEngine.Vector3 Up = SplineContainer_getCard.Spline.EvaluateUpVector(StartPos);//获取卡牌在曲线上的上方向
-            UnityEngine.Quaternion rot = UnityEngine.Quaternion.LookRotation(Up,UnityEngine.Vector3.Cross(Up,forWard).normalized);//计算卡牌的旋转
-            //利用插件Dotween来移动卡片
-            HandCardList[i].transform.DOMove(worldSplinePos, 0.5f);//移动位置
+            HandCardList[i].transform.DOMove(worldSplinePos, 0.5f);
+            HandCardList[i].transform.DORotateQuaternion(rot, 0.5f);
 
             Card card = HandCardList[i].GetComponent<Card>();
-            HandCardList[i].transform.DORotateQuaternion(rot, 0.5f);//旋转
-            //打开协程
-            StartCoroutine(WaitTime(card, worldSplinePos));//告诉卡片播放完毕
-
+            StartCoroutine(WaitTime(card, worldSplinePos));
         }
-
     }
-
 
     IEnumerator WaitTime( Card Card,Vector3 Pos)
     {

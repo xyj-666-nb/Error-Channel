@@ -20,6 +20,7 @@ public class WarnPanel : BasePanel
         if(controlName=="CertainButton")
         {
             //点击确认按钮
+            MusicManager.Instance.PlayEffectMusic("Music/点击", false);
             UImanager.Instance.HidePanel<WarnPanel>();//隐藏警告面板
         }
     }
@@ -49,6 +50,7 @@ public class WarnPanel : BasePanel
 
     public override void ShowMe(bool IsNeedDefalutAnimator = true)
     {
+        MusicManager.Instance.PlayEffectMusic("Music/提示音", false);
         //先隐藏一下敌人卡牌
         EnemyCard.CurrentEnemyCard.SetHideOrShowCurrentCard(false);
         //打开时间暂停

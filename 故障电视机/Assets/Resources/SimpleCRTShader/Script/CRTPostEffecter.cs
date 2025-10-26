@@ -1,5 +1,4 @@
 using DG.Tweening;
-using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
@@ -8,6 +7,7 @@ public class CRTPostEffecter : MonoBehaviour
     private static CRTPostEffecter Instance;
     public static CRTPostEffecter instance => Instance;
 
+    // 效果核心参数
     public Material material;
     public int whiteNoiseFrequency = 1;
     public float whiteNoiseLength = 0.1f;
@@ -58,10 +58,29 @@ public class CRTPostEffecter : MonoBehaviour
     public bool isLowResolution = true;
     public Vector2Int resolutions;
 
-    // 渲染范围（UV坐标，x=左边界, y=下边界, width=宽度, height=高度，取值0-1）
+    // UV范围参数（效果作用区域）
     public Rect effectRange = new Rect(0.2f, 0.2f, 0.6f, 0.6f);
 
-    #region Properties in shader
+    // 调试可视化参数
+    [Header("调试设置")]
+    public bool showDebugRange = true;
+    public Color debugRangeColor = new Color(1, 0, 0, 0.3f);
+
+    // 玩家交互参数
+    [Header("交互设置")]
+    public bool allowPlayerAdjust = true; // 允许玩家拖动调整范围
+    [Tooltip("边缘检测距离（像素），越大越容易拖动边缘")]
+    public float edgeDetectDistance = 10f;
+
+    // 交互状态变量
+    private bool isDragging = false;
+    private bool isResizing = false;
+    private Rect dragStartRect;
+    private Vector2 dragStartPos;
+    private ResizeEdge currentEdge;
+    private enum ResizeEdge { None, Left, Right, Top, Bottom }
+
+    #region Shader属性ID
     private int _WhiteNoiseOnOff;
     private int _ScanlineOnOff;
     private int _MonochormeOnOff;
@@ -89,12 +108,15 @@ public class CRTPostEffecter : MonoBehaviour
     private int _FilmDirtTex;
     private int _EffectRange;
     #endregion
+
     private void Awake()
     {
         Instance = this;
     }
+
     private void Start()
     {
+        // 初始化Shader属性ID
         _WhiteNoiseOnOff = Shader.PropertyToID("_WhiteNoiseOnOff");
         _ScanlineOnOff = Shader.PropertyToID("_ScanlineOnOff");
         _MonochormeOnOff = Shader.PropertyToID("_MonochormeOnOff");
@@ -123,63 +145,183 @@ public class CRTPostEffecter : MonoBehaviour
         _EffectRange = Shader.PropertyToID("_EffectRange");
     }
 
-    // ====================================== 新增：修复效果函数 ======================================
-    /// <summary>
-    /// 调用后减弱CRT效果（调整指定参数至低强度状态）
-    /// </summary>
-    /// <summary>
-    /// 直接关闭大部分效果，仅保留极淡基础效果（立刻见效）
-    /// </summary>
-    /// <summary>
-    /// 修复后效果：保留老式电视机复古感（淡扫描线/弱色差），去除故障抖动/杂乱
-    /// </summary>
-    /// <summary>
-    /// 修复后效果：保留明显的老式电视复古感（中等强度），无故障杂乱
-    /// </summary>
+    private void Update()
+    {
+        if (!allowPlayerAdjust) return;
+
+        // 处理鼠标/触摸交互（编辑器和运行时均支持）
+        if (Input.GetMouseButtonDown(0))
+        {
+            OnMouseDown(Input.mousePosition);
+        }
+        else if (Input.GetMouseButton(0) && (isDragging || isResizing))
+        {
+            OnMouseDrag(Input.mousePosition);
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            // 结束拖动/调整
+            isDragging = false;
+            isResizing = false;
+            currentEdge = ResizeEdge.None;
+        }
+    }
+
+    // 鼠标按下：判断是拖动整体还是调整边缘
+    private void OnMouseDown(Vector2 screenPos)
+    {
+        Vector2 uvPos = ScreenToUV(screenPos);
+
+        if (effectRange.Contains(uvPos))
+        {
+            currentEdge = GetEdgeAtPosition(uvPos);
+            if (currentEdge != ResizeEdge.None)
+            {
+                // 边缘拖动（调整大小）
+                isResizing = true;
+                dragStartRect = effectRange;
+                dragStartPos = screenPos;
+            }
+            else
+            {
+                // 内部拖动（调整位置）
+                isDragging = true;
+                dragStartRect = effectRange;
+                dragStartPos = screenPos;
+            }
+        }
+    }
+
+    // 鼠标拖动：更新范围
+    private void OnMouseDrag(Vector2 screenPos)
+    {
+        if (isDragging)
+        {
+            // 计算UV偏移
+            Vector2 deltaScreen = screenPos - dragStartPos;
+            Vector2 deltaUV = new Vector2(
+                deltaScreen.x / Screen.width,
+                deltaScreen.y / Screen.height
+            );
+
+            // 更新位置
+            effectRange.x = dragStartRect.x + deltaUV.x;
+            effectRange.y = dragStartRect.y + deltaUV.y;
+            ClampRectToScreen(); // 限制在屏幕内
+        }
+        else if (isResizing && currentEdge != ResizeEdge.None)
+        {
+            Vector2 deltaScreen = screenPos - dragStartPos;
+            Vector2 deltaUV = new Vector2(
+                deltaScreen.x / Screen.width,
+                deltaScreen.y / Screen.height
+            );
+
+            // 恢复初始范围，再应用偏移（避免累积误差）
+            effectRange = dragStartRect;
+
+            // 根据边缘调整大小
+            switch (currentEdge)
+            {
+                case ResizeEdge.Left:
+                    effectRange.x += deltaUV.x;
+                    effectRange.width = dragStartRect.width - deltaUV.x;
+                    break;
+                case ResizeEdge.Right:
+                    effectRange.width = dragStartRect.width + deltaUV.x;
+                    break;
+                case ResizeEdge.Bottom:
+                    effectRange.y += deltaUV.y;
+                    effectRange.height = dragStartRect.height - deltaUV.y;
+                    break;
+                case ResizeEdge.Top:
+                    effectRange.height = dragStartRect.height + deltaUV.y;
+                    break;
+            }
+
+            ClampRectToScreen(); // 限制在屏幕内
+            EnsureMinSize(0.05f); // 最小5%屏幕大小
+        }
+    }
+
+    // 屏幕坐标转UV坐标（0-1）
+    private Vector2 ScreenToUV(Vector2 screenPos)
+    {
+        return new Vector2(
+            screenPos.x / Screen.width,
+            screenPos.y / Screen.height
+        );
+    }
+
+    // 判断点击位置是否在边缘
+    private ResizeEdge GetEdgeAtPosition(Vector2 uvPos)
+    {
+        float edgeUVX = edgeDetectDistance / Screen.width; // 边缘检测距离（UV单位）
+        float edgeUVY = edgeDetectDistance / Screen.height;
+
+        // 左边缘
+        if (uvPos.x >= effectRange.x - edgeUVX && uvPos.x <= effectRange.x + edgeUVX)
+            return ResizeEdge.Left;
+        // 右边缘
+        if (uvPos.x >= effectRange.x + effectRange.width - edgeUVX && uvPos.x <= effectRange.x + effectRange.width + edgeUVX)
+            return ResizeEdge.Right;
+        // 下边缘
+        if (uvPos.y >= effectRange.y - edgeUVY && uvPos.y <= effectRange.y + edgeUVY)
+            return ResizeEdge.Bottom;
+        // 上边缘
+        if (uvPos.y >= effectRange.y + effectRange.height - edgeUVY && uvPos.y <= effectRange.y + effectRange.height + edgeUVY)
+            return ResizeEdge.Top;
+
+        return ResizeEdge.None;
+    }
+
+    // 限制范围不超出屏幕（0-1 UV）
+    private void ClampRectToScreen()
+    {
+        effectRange.x = Mathf.Clamp(effectRange.x, 0, 1);
+        effectRange.y = Mathf.Clamp(effectRange.y, 0, 1);
+        effectRange.width = Mathf.Clamp(effectRange.width, 0, 1 - effectRange.x);
+        effectRange.height = Mathf.Clamp(effectRange.height, 0, 1 - effectRange.y);
+    }
+
+    // 确保范围有最小尺寸（避免缩成0）
+    private void EnsureMinSize(float minSize)
+    {
+        effectRange.width = Mathf.Max(effectRange.width, minSize);
+        effectRange.height = Mathf.Max(effectRange.height, minSize);
+        effectRange.x = Mathf.Min(effectRange.x, 1 - effectRange.width); // 避免右边缘超出
+        effectRange.y = Mathf.Min(effectRange.y, 1 - effectRange.height); // 避免上边缘超出
+    }
+
+    // 修复效果：保留中等复古感
     public void FixCRTEffect_MediumVintage()
     {
-        // ====================================== 1. 坚决关闭“故障类效果”（不允许杂乱回归）
-        isSlippage = false;          // 关闭画面滑动/偏移（故障核心，必须关）
-        isFilmDirt = false;          // 关闭胶片污渍（避免脏污感）
-        isMultipleGhost = false;     // 关闭多重鬼影（防止画面叠影混乱）
-        isDecalTex = false;          // 关闭额外贴图干扰
-        screenJumpFrequency = 0;     // 彻底关闭屏幕跳动
-        screenJumpLength = 0.001f;   // 防误触发
+        isSlippage = false;
+        isFilmDirt = false;
+        isMultipleGhost = false;
+        isDecalTex = false;
+        screenJumpFrequency = 0;
+        screenJumpLength = 0.001f;
 
-
-        // ====================================== 2. 增强“复古核心效果”（比之前稍重，保持自然）
-        // ① 扫描线（老式电视最核心标志，调至中等密度，清晰可见但不刺眼）
         isScanline = true;
-        // （若Shader支持扫描线强度，可在Shader中调大“线密度”，比如从10→20，让线更明显）
-
-        // ② 色差（边缘偏色更明显，增强复古感，但不杂乱）
         isChromaticAberration = true;
-        chromaticAberrationStrength = 0.001f;  // 比之前的0.0003f稍强（原故障值0.005f）
+        chromaticAberrationStrength = 0.001f;
 
-        // ③ 底噪（轻微白噪音，模拟老式电视的“沙沙”底噪感，偶尔出现）
-        whiteNoiseFrequency = 2;     // 低频率（1000帧里出现2次）
-        whiteNoiseLength = 0.1f;     // 每次持续0.1秒（极短，不干扰观看）
+        whiteNoiseFrequency = 2;
+        whiteNoiseLength = 0.1f;
 
-        // ④ 闪烁（轻微电流波动，比之前稍明显，但稳定）
-        flickeringStrength = 0.0005f;  // 比之前的0.0001f稍强（原故障值0.002f）
-        flickeringCycle = 150f;        // 周期适中，避免高频闪烁
+        flickeringStrength = 0.0005f;
+        flickeringCycle = 150f;
 
-
-        // ====================================== 3. 可选：轻微保留低分辨率（增强复古颗粒感）
         isLowResolution = true;
-        resolutions = new Vector2Int(960, 540);  // 半高清（比原故障的更低分辨率清晰，保留颗粒感）
+        resolutions = new Vector2Int(960, 540);
 
-
-        // ====================================== 4. 同步Shader参数，确保效果生效
         if (material != null)
         {
-            // 故障类效果：强制关闭
             material.SetInteger(_SlippageOnOff, 0);
             material.SetInteger(_FilmDirtOnOff, 0);
             material.SetInteger(_MultipleGhostOnOff, 0);
             material.SetFloat(_ScreenJumpLevel, 0);
-
-            // 复古类效果：同步增强后的参数
             material.SetInteger(_ScanlineOnOff, 1);
             material.SetFloat(_ChromaticAberrationStrength, chromaticAberrationStrength);
             material.SetFloat(_FlickeringStrength, flickeringStrength);
@@ -188,16 +330,16 @@ public class CRTPostEffecter : MonoBehaviour
 
         Debug.Log("修复完成：保留中等强度复古感，明显的老式电视质感，无故障杂乱");
     }
-    // ==============================================================================================
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-        if (material == null)  // 防止material未赋值导致报错
+        if (material == null)
         {
             Graphics.Blit(src, dest);
             return;
         }
 
+        // 传递UV范围给Shader
         material.SetVector(_EffectRange, new Vector4(
             effectRange.x,
             effectRange.y,
@@ -205,26 +347,20 @@ public class CRTPostEffecter : MonoBehaviour
             effectRange.height
         ));
 
-        ///////White noise
+        // 白噪音逻辑
         whiteNoiseTimeLeft -= 0.01f;
         if (whiteNoiseTimeLeft <= 0)
         {
-            if (Random.Range(0, 1000) < whiteNoiseFrequency)
-            {
-                material.SetInteger(_WhiteNoiseOnOff, 1);
-                whiteNoiseTimeLeft = whiteNoiseLength;
-            }
-            else
-            {
-                material.SetInteger(_WhiteNoiseOnOff, 0);
-            }
+            material.SetInteger(_WhiteNoiseOnOff, Random.Range(0, 1000) < whiteNoiseFrequency ? 1 : 0);
+            whiteNoiseTimeLeft = whiteNoiseLength;
         }
-        //////
 
+        // letterBox设置
         material.SetInteger(_LetterBoxOnOff, isLetterBox ? 0 : 1);
         material.SetInteger(_LetterBoxEdgeBlurOnOff, isLetterBoxEdgeBlur ? 1 : 0);
         material.SetInteger(_LetterBoxType, (int)letterBoxType);
 
+        // 基础效果参数
         material.SetInteger(_ScanlineOnOff, isScanline ? 1 : 0);
         material.SetInteger(_MonochormeOnOff, isMonochrome ? 1 : 0);
         material.SetFloat(_FlickeringStrength, flickeringStrength);
@@ -236,40 +372,32 @@ public class CRTPostEffecter : MonoBehaviour
         material.SetInteger(_FilmDirtOnOff, isFilmDirt ? 1 : 0);
         material.SetTexture(_FilmDirtTex, filmDirtTex);
 
-        //////Slippage
+        // 滑动效果参数
         material.SetInteger(_SlippageOnOff, isSlippage ? 1 : 0);
         material.SetFloat(_SlippageInterval, slippageInterval);
         material.SetFloat(_SlippageNoiseOnOff, isSlippageNoise ? Random.Range(0, 1f) : 1);
         material.SetFloat(_SlippageScrollSpeed, slippageScrollSpeed);
         material.SetFloat(_SlippageStrength, slippageStrength);
         material.SetFloat(_SlippageSize, slippageSize);
-        //////
 
-        //////Screen Jump Noise
+        // 屏幕跳动逻辑
         screenJumpTimeLeft -= 0.01f;
         if (screenJumpTimeLeft <= 0)
         {
-            if (Random.Range(0, 1000) < screenJumpFrequency)
-            {
-                var level = Random.Range(screenJumpMinLevel, screenJumpMaxLevel);
-                material.SetFloat(_ScreenJumpLevel, level);
-                screenJumpTimeLeft = screenJumpLength;
-            }
-            else
-            {
-                material.SetFloat(_ScreenJumpLevel, 0);
-            }
+            float level = Random.Range(0, 1000) < screenJumpFrequency
+                ? Random.Range(screenJumpMinLevel, screenJumpMaxLevel)
+                : 0;
+            material.SetFloat(_ScreenJumpLevel, level);
+            screenJumpTimeLeft = screenJumpLength;
         }
-        //////
 
-        //////Decal Texture
+        // 贴图参数
         material.SetTexture(_DecalTex, decalTex);
         material.SetInteger(_DecalTexOnOff, isDecalTex ? 1 : 0);
         material.SetVector(_DecalTexPos, decalTexPos);
         material.SetVector(_DecalTexScale, decalTexScale);
-        //////
 
-        //////Low resolution
+        // 低分辨率处理
         if (isLowResolution)
         {
             var target = RenderTexture.GetTemporary(src.width / 2, src.height / 2);
@@ -281,6 +409,65 @@ public class CRTPostEffecter : MonoBehaviour
         {
             Graphics.Blit(src, dest, material);
         }
-        //////
+
+        // 绘制调试范围（编辑器模式）
+        if (showDebugRange && Application.isEditor)
+        {
+            DrawDebugRange();
+        }
+    }
+
+    // 绘制调试范围框
+    private void DrawDebugRange()
+    {
+        int screenWidth = Screen.width;
+        int screenHeight = Screen.height;
+
+        // 转换UV范围到屏幕像素坐标
+        float x = effectRange.x * screenWidth;
+        float y = effectRange.y * screenHeight;
+        float width = effectRange.width * screenWidth;
+        float height = effectRange.height * screenHeight;
+
+        // 绘制矩形（使用GL）
+        GL.PushMatrix();
+        GL.LoadOrtho(); // 正交投影（2D屏幕空间）
+        GL.invertCulling = true;
+
+        // 使用内置纯色Shader
+        var debugMat = new Material(Shader.Find("Hidden/Internal-Colored"));
+        debugMat.SetPass(0);
+
+        // 填充半透明区域
+        GL.Begin(GL.QUADS);
+        GL.Color(debugRangeColor);
+        GL.Vertex3(x / screenWidth, y / screenHeight, 0);
+        GL.Vertex3((x + width) / screenWidth, y / screenHeight, 0);
+        GL.Vertex3((x + width) / screenWidth, (y + height) / screenHeight, 0);
+        GL.Vertex3(x / screenWidth, (y + height) / screenHeight, 0);
+        GL.End();
+
+        // 绘制边框（红色实线）
+        GL.Begin(GL.LINES);
+        GL.Color(new Color(1, 0, 0, 1));
+        // 下边框
+        GL.Vertex3(x / screenWidth, y / screenHeight, 0);
+        GL.Vertex3((x + width) / screenWidth, y / screenHeight, 0);
+        // 上边框
+        GL.Vertex3(x / screenWidth, (y + height) / screenHeight, 0);
+        GL.Vertex3((x + width) / screenWidth, (y + height) / screenHeight, 0);
+        // 左边框
+        GL.Vertex3(x / screenWidth, y / screenHeight, 0);
+        GL.Vertex3(x / screenWidth, (y + height) / screenHeight, 0);
+        // 右边框
+        GL.Vertex3((x + width) / screenWidth, y / screenHeight, 0);
+        GL.Vertex3((x + width) / screenWidth, (y + height) / screenHeight, 0);
+        GL.End();
+
+        GL.invertCulling = false;
+        GL.PopMatrix();
+
+        // 释放临时材质
+        DestroyImmediate(debugMat);
     }
 }
