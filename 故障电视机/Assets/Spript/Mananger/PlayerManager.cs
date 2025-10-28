@@ -1,120 +1,140 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
-public enum GameLevel
-{
-    Level1,
-    Level2,
-    Level3,
-    Level4,
-    Level5
-}
 
 public class PlayerManager : MonoBehaviour
 {
-    public static PlayerManager instance;//单例
-    public PlayerManager Instance=> instance;//玩家控制器
+    public static PlayerManager instance;
+    public PlayerManager Instance => instance;
 
-    //玩家管理器
-    public int CurrentHealth=10;//玩家当前血量
-    public int MaxHealth = 10;//玩家最大血量
-    public int PlayerCurrentGold=0;//玩家当前金币数量
-    public int PlayerParts = 0;//玩家当前修复零件数量
-    public float CurrentFixProcess = 0f;//当前修复进度
-    public int MaxCardAmount = 5;//最大卡牌数量
-    public GameLevel CurrentLevel = GameLevel.Level1;//当前关卡
+    // 玩家基础属性
+    public int CurrentHealth = 10;
+    public int MaxHealth = 10;
+    public int PlayerCurrentGold = 0;
+    public int PlayerParts = 0;
+    public float CurrentFixProcess = 0f;
+    public int MaxCardAmount = 5;
+    public GameLevel CurrentLevel = GameLevel.Level1;
 
-    //关于修复相关
-    public bool IsObtainShowPart = true;//是否获得显示零件
-    public int IsFixShowGold_NeedPart = 10;//修复显示金币所需要的零件数量
-    public int FixPart_NeedParts = 10;//修复所需零件数量
-    public bool IsFixExitButton = false;//是否有修复退出按钮
-    public int IsFixExitButton_NeedParts = 20;//修复退出按钮所需零件数量
-    public bool IsObtainShowGoldSkill = true;//是否获得金币显示
- 
+    // 修复相关
+    public bool IsObtainShowPart = true;
+    public int IsFixShowGold_NeedPart = 10;
+    public int FixPart_NeedParts = 10;
+    public bool IsFixExitButton = false;
+    public int IsFixExitButton_NeedParts = 20;
+    public bool IsObtainShowGoldSkill = true;
 
-    //关于升级相关
-    public int AvancedCardAmount_NeedMoney = 100;//升级额外卡牌所需金币数量
-    public bool IsCanAdvanceCardAmount = true;//是否可以升级额外卡牌数量
-    public int CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量
-    public bool IsGetAutoCulCaltorSkill;//是否获得计算器自动计算技能
-    public int  GetAutoCulCaltorNeedMoney=500;//获得自动计算器技能所需金币数量
+    // 升级相关
+    public int AvancedCardAmount_NeedMoney = 100;
+    public bool IsCanAdvanceCardAmount = true;
+    public int CurrentAdvanceCardAmount = 0;
+    public bool IsGetAutoCulCaltorSkill;
+    public int GetAutoCulCaltorNeedMoney = 500;
 
-    [SerializeField]private List<int> LevelCangetGoldList = new List<int>() { 1, 5, 10, 25, 50 };//每个难度可获得的金币数量
+    // 结果强化系统 - 修复部分
+    public List<bool> IsGetStrengthenReultPerLevel = new List<bool>() { false, false, false, false, false };
+    public List<int> GetStrengthenReultList_NeedMoney = new List<int>() { 30, 50, 100, 150, 300 };
+    public List<int> GetStrengthenReultList = new List<int>() { 10, 60, 100, 150, 200 };
+    public int RealHealthNeedMoney = 50;
+    public int CurrentPlayerStrengthenReult;
+
+    [SerializeField] private List<int> LevelCangetGoldList = new List<int>() { 1, 5, 10, 25, 50 };
     public List<int> AdvanceLevelNeedMoney = new List<int> {
-    100,  // Level1 (索引0)
-    200,  // Level2 (索引1)  
-    300,  // Level3 (索引2)
-    400,  // Level4 (索引3)
-    500   // Level5 (索引4) 
-};
-    public int CurrentLevelCanGetGold = 1;//当前难度可获得金币数量
-    public int CurrenWinningStreak = 0;//当前连胜数
+        100,  // Level1
+        200,  // Level2  
+        300,  // Level3
+        400,  // Level4
+        500   // Level5 
+    };
+    public int CurrentLevelCanGetGold = 1;
+    public int CurrenWinningStreak = 0;
 
     public bool IsStartShowPrompttext_Gold = false;
     public int StartShowPrompttext_GoldneedPart = 5;
     public bool IsStartShowPrompttext_part = false;
     public int StartShowPrompttext_PartneedPart = 5;
-
     public bool IsFixShowPlayerHealth = false;
     public int FixShowPlayerHealthNeedPart = 5;
-
     public bool FixCcenceEffector = false;
     public int FixCcenceEffector_NeedPart = 10;
-
-    public bool FixVolume=false;
+    public bool FixVolume = false;
     public int FixVolumeNeedPart = 5;
+    public int CurrentMaxSelectCardMount = 1;
+    public bool IsCanDesignModeCalculator = false;
+
+    private bool FirstTriggerPeomptHealth = true;
+
     public void Awake()
     {
         if (instance == null)
             instance = this;
 
-        CurrentHealth= MaxHealth;//初始化血量
+        CurrentHealth = MaxHealth;
         CurrenWinningStreak = 0;
-        //设置等级
-        CurrentAdvanceCardAmount = 0;//当前已升级的额外卡牌数量归零
+        CurrentAdvanceCardAmount = 0;
+        CurrentPlayerStrengthenReult = 0;
+
+        // 初始化结果强化状态
+        InitializeStrengthenResults();
+    }
+
+    /// <summary>
+    /// 初始化结果强化状态
+    /// </summary>
+    private void InitializeStrengthenResults()
+    {
+        // 确保列表有正确的长度
+        if (IsGetStrengthenReultPerLevel.Count < 5)
+        {
+            IsGetStrengthenReultPerLevel = new List<bool>() { false, false, false, false, false };
+        }
+        if (GetStrengthenReultList_NeedMoney.Count < 5)
+        {
+            GetStrengthenReultList_NeedMoney = new List<int>() { 30, 50, 100, 150, 300 };
+        }
+        if (GetStrengthenReultList.Count < 5)
+        {
+            GetStrengthenReultList = new List<int>() { 10, 60, 100, 150, 200 };
+        }
     }
 
     public void ActiveAutoButton()
     {
-        IsGetAutoCulCaltorSkill=true;
+        IsGetAutoCulCaltorSkill = true;
         UImanager.Instance.GetPanel<televisionPanel>().SetCallAutoButtonActive(true);
     }
 
-    //玩家胜利函数
-    public void PlayerWin(Card Card)
+    // 玩家胜利函数
+    public void PlayerWin(Card Card, Card Card2 = null)
     {
-        //增加连胜数
         CurrenWinningStreak++;
         switch (CurrenWinningStreak)
         {
-        case 1:
-         Slider_Part.instance.UpdateGetProcess(0.3f);
+            case 1:
+                Slider_Part.instance.UpdateGetProcess(0.3f);
                 break;
-        case 2:
-         Slider_Part.instance.UpdateGetProcess(0.7f);
+            case 2:
+                Slider_Part.instance.UpdateGetProcess(0.7f);
                 break;
         }
 
-        if (CurrenWinningStreak >= 3)//判断零件嘉奖规则
+        if (CurrenWinningStreak >= 3)
         {
-            Slider_Part.instance.UpdateGetProcess(1f);//直接给到满
-            AddPart();//三连胜获得零件,之后每胜利获得一个零件
+            Slider_Part.instance.UpdateGetProcess(1f);
+            AddPart();
             Slider_Part.instance.GetPart(1);
             UI_ShowPart.Instance.UpdatePartText();
-            //播放音效
-            MusicManager.Instance.PlayEffectMusic("Music/成功收集到零件", false);//播放噪音
+            MusicManager.Instance.PlayEffectMusic("Music/成功收集到零件", false);
         }
 
-        //播放成功音效
         MusicManager.Instance.PlayEffectMusic("Music/对比成功", false);
-
-        //发放钱币奖励
         GetGoldArea.Instance.CreateGold(CurrentLevelCanGetGold);
         PlayerManager.instance.ChangeGold(CurrentLevelCanGetGold);
-        //回收两张牌然后创建新牌
         RecycleCurrentPushCard(Card);
+        if (CurrentMaxSelectCardMount == 2 && Card2 != null)
+            RecycleArea.Instance.RecycleCard(Card2);
     }
 
     private void RecycleCurrentPushCard(Card Card)
@@ -122,34 +142,32 @@ public class PlayerManager : MonoBehaviour
         RecycleArea.Instance.RecycleCard(Card);
         RecycleArea.Instance.RecycleObj(EnemyCard.CurrentEnemyCard.transform);
         EnemyCard.CurrentEnemyCard = null;
-        HandCardManger.Instance.GetEnemyCard();//重新获取敌人卡牌
-
+        HandCardManger.Instance.GetEnemyCard();
     }
 
-    //玩家失败函数
-    public void PlayerLose(Card Card)
+    // 玩家失败函数
+    public void PlayerLose(Card Card, Card Card2 = null)
     {
-        CurrenWinningStreak = 0;//失败连胜数归零
-        Slider_Part.instance.UpdateGetProcess(0);//直接清零
-        //扣两滴血
+        CurrenWinningStreak = 0;
+        Slider_Part.instance.UpdateGetProcess(0);
         ChangeHealth(-2);
         RecycleCurrentPushCard(Card);
-        //失败屏幕晃动！
-        // CameraControl.Instance.AddCameraShake(0.5f, 0.6f);
-        //回收两张牌然后创建新牌
+        if (CurrentMaxSelectCardMount == 2 && Card2 != null)
+            RecycleArea.Instance.RecycleCard(Card2);
+        Debug.Log("触发失败震动");
+        CameraControl.Instance.AddCameraShake(0.5f, 0.6f);
+        MusicManager.Instance.PlayEffectMusic("Music/玩家失败错误", false);
     }
+
     public void AddPart()
     {
         PlayerParts++;
-        //可能后面要做更新ui啊和播放动画子类的
     }
 
     public void ChangeGold(int Value)
     {
         PlayerCurrentGold += Value;
-        //更新金币显示
         UI_ShowGold.Instance.UpdateGold(PlayerCurrentGold);
-        //开启金币的提示文本
         if (Value < 0)
             UI_ShowGold.Instance.SetPromptText(false, Value);
         else
@@ -162,43 +180,139 @@ public class PlayerManager : MonoBehaviour
         if (CurrentHealth > MaxHealth)
             CurrentHealth = MaxHealth;
         else if (CurrentHealth < 0)
+        {
             CurrentHealth = 0;
+            Main.Instance.InitDia.StartDialogue(11);
+        }
         UI_healthslider.instance.UpdateHeathBar();
-    }
 
+        if (CurrentHealth == 2 && FirstTriggerPeomptHealth)
+        {
+            FirstTriggerPeomptHealth = false;
+            Main.Instance.InitDia.StartDialogue(7);
+        }
+    }
 
     public void AddGameLevel()
     {
         CurrentLevel++;
         RefreshLevel();
-        //刷新一下手牌数据
         ReFreshCardNumber();
 
-        //调用手牌按钮激活
         if (UImanager.Instance.GetPanel<AdvanceShopPanel>())
         {
-            //如果高级商店面板打开的话就刷新按钮
             UImanager.Instance.GetPanel<AdvanceShopPanel>().SetAddCardAmount_Button_interactable();
         }
+
+        if (CurrentLevel == GameLevel.Level3)
+        {
+            CurrentMaxSelectCardMount = 2;
+            Main.Instance.InitDia.StartDialogue(5);
+        }
+        else if (CurrentLevel == GameLevel.Level5)
+        {
+            IsCanDesignModeCalculator = true;
+            Main.Instance.InitDia.StartDialogue(6);
+        }
+
     }
 
     public void RefreshLevel()
     {
         UImanager.Instance.GetPanel<televisionPanel>().ChangeLevelText(CurrentLevel);
-        //刷新一些数据，加载一些根据等级改变而改变的数据
-        CardNumberInfo.Instance.ChangeLevelData(CurrentLevel);//改变数据的来源
-        //当前胜利的金币获取数
+        CardNumberInfo.Instance.ChangeLevelData(CurrentLevel);
         CurrentLevelCanGetGold = LevelCangetGoldList[(int)CurrentLevel];
     }
+
     public void ReFreshCardNumber()
     {
-        foreach (var card in HandCardManger.Instance.HandCardList)
+        // 关键修改：创建手牌列表的副本进行遍历，避免枚举时修改原集合
+        if (HandCardManger.Instance != null && RecycleArea.Instance != null)
         {
-            card.GetComponentInChildren<Card>().RefreshData();//刷新玩家手牌数据
+            var handCardsCopy = HandCardManger.Instance.HandCardList.ToArray();
+            foreach (var card in handCardsCopy)
+            {
+                RecycleArea.Instance.RecycleCard(card.GetComponentInChildren<Card>());
+            }
+
+            // 清空手牌列表，因为所有卡牌都已被回收
+            HandCardManger.Instance.HandCardList.Clear();
         }
 
-        //敌人数据刷新
-        EnemyCard.CurrentEnemyCard.RefreshCard();
+        RecycleArea.Instance.RecycleObj(EnemyCard.CurrentEnemyCard.transform);
+        EnemyCard.CurrentEnemyCard = null;
+        HandCardManger.Instance.GetEnemyCard();
+
+        // 重新初始化所有卡牌
+        if (HandCardManger.Instance != null)
+        {
+            HandCardManger.Instance.InitCard();
+        }
     }
 
+    /// <summary>
+    /// 检查当前等级是否已经购买了结果强化
+    /// </summary>
+    public bool HasPurchasedStrengthenForCurrentLevel()
+    {
+        int currentLevelIndex = (int)CurrentLevel;
+        if (currentLevelIndex >= 0 && currentLevelIndex < IsGetStrengthenReultPerLevel.Count)
+        {
+            return IsGetStrengthenReultPerLevel[currentLevelIndex];
+        }
+        return false;
+    }
+
+    public void PlayerLose(Card Card, Card Card2, int extraDamage)
+    {
+        CurrenWinningStreak = 0;
+        Slider_Part.instance.UpdateGetProcess(0);
+        // 基础扣2血 + 额外扣血（敌人方片效果）
+        ChangeHealth(-(2 + extraDamage));
+        RecycleCurrentPushCard(Card);
+        if (CurrentMaxSelectCardMount == 2 && Card2 != null)
+            RecycleArea.Instance.RecycleCard(Card2);
+        Debug.Log("触发失败震动");
+        CameraControl.Instance.AddCameraShake(0.5f, 0.6f);
+        MusicManager.Instance.PlayEffectMusic("Music/玩家失败错误", false);
+    }
+
+    /// <summary>
+    /// 购买当前等级的结果强化
+    /// </summary>
+    public void PurchaseStrengthenForCurrentLevel()
+    {
+        int currentLevelIndex = (int)CurrentLevel;
+        if (currentLevelIndex >= 0 && currentLevelIndex < IsGetStrengthenReultPerLevel.Count)
+        {
+            IsGetStrengthenReultPerLevel[currentLevelIndex] = true;
+            CurrentPlayerStrengthenReult += GetStrengthenReultList[currentLevelIndex];
+            Debug.Log($"结果强化购买成功，等级{currentLevelIndex}，强化值+{GetStrengthenReultList[currentLevelIndex]}，总强化值：{CurrentPlayerStrengthenReult}");
+        }
+    }
+
+    /// <summary>
+    /// 获取当前等级的结果强化价格
+    /// </summary>
+    public int GetCurrentLevelStrengthenPrice()
+    {
+        int currentLevelIndex = (int)CurrentLevel;
+        if (currentLevelIndex >= 0 && currentLevelIndex < GetStrengthenReultList_NeedMoney.Count)
+        {
+            return GetStrengthenReultList_NeedMoney[currentLevelIndex];
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// 检查是否所有等级的结果强化都已购买
+    /// </summary>
+    public bool IsAllStrengthenPurchased()
+    {
+        foreach (bool purchased in IsGetStrengthenReultPerLevel)
+        {
+            if (!purchased) return false;
+        }
+        return true;
+    }
 }

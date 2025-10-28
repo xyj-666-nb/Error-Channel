@@ -132,7 +132,7 @@ public class DialogueControl : MonoBehaviour
         if (currentPanel != null)
         {
             currentPanel.AnimaEndCallBack = OnDialoguePanelReady;
-            currentPanel.ShowAnimator();
+            //currentPanel.ShowAnimator();
         }
         else
         {

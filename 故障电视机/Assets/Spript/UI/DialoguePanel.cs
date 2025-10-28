@@ -33,7 +33,7 @@ public class DialoguePanel : BasePanel
 
     [Header("关键引用")]
     [SerializeField] private Camera mainCamera; // 手动拖入场景中的主摄像机（非static摄像机）
- 
+
 
     public override void Start()
     {
@@ -282,6 +282,12 @@ public class DialoguePanel : BasePanel
             promptCoroutine = null;
         }
 
+        //打开交互
+        foreach (var Card in HandCardManger.Instance.HandCardList)
+        {
+            Card.GetComponent<Card>().IsCanInteractive = true;
+        }
+
         // 停止闪烁并隐藏提示文本
         SetPromptText(false);
 
@@ -315,11 +321,17 @@ public class DialoguePanel : BasePanel
     {
         // 显示前重新校准Canvas（防止摄像机切换后错位）
         SetupSubCanvas();
-
+        GetComponent<Animator>().SetBool("IsStart", true);
         // 确保在所有UI顶层
         if (subCanvas != null)
         {
             subCanvas.sortingOrder = 200; // 强制最高层级
+        }
+
+        //关闭卡牌的交互
+        foreach(var Card in HandCardManger.Instance.HandCardList)
+        {
+            Card.GetComponent<Card>().IsCanInteractive = false;
         }
 
         // 其他原有逻辑

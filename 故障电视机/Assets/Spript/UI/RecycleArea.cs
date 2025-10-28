@@ -48,7 +48,10 @@ public class RecycleArea : MonoBehaviour
         Card.Push();
         HandCardManger.Instance.HandCardList.Remove(Card.gameObject);
         HandCardManger.Instance.UpdateCardPosition();
-        Card.CurrentSelectedCard = null;
+        if (Card.CurrentSelectedCard_1== Card)
+          Card.CurrentSelectedCard_1 = null;
+        else if(Card.CurrentSelectedCard_2 == Card)
+            Card.CurrentSelectedCard_2= null;
 
         MyPanel.RecycleArea_Image.color = Color.white;
         MyPanel.SetRecycleAreaActive(false);

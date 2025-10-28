@@ -47,10 +47,10 @@ public class televisionPanel : BasePanel
         {
             case "PassButton":
                 //判断玩家当前有没有选择手牌
-               if(Card.CurrentSelectedCard!=null)
+               if(Card.CurrentSelectedCard_1!=null)
                 {
                     //随机抽出牌来回收
-                    RecycleArea.Instance.RecycleCard(Card.CurrentSelectedCard);
+                    RecycleArea.Instance.RecycleCard(Card.CurrentSelectedCard_1);
                     HandCardManger.Instance.CreatCard();//创建卡牌
                     MusicManager.Instance.PlayEffectMusic("Music/单次拿牌", false);
                     PassPromptText.Instance.TriggerPass();//触发pass文本更新
@@ -74,13 +74,13 @@ public class televisionPanel : BasePanel
                 AnimatorControl_advance.SetAnimatorStart();
                 if (UImanager.Instance.GetPanel<AdvanceShopPanel>())
                 {
-                    controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Advance Shop";
+                    controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "升级商店";
                     UImanager.Instance.HidePanel<AdvanceShopPanel>();//隐藏高级商店
                     MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 }
                 else
                 {
-                    controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Close";
+                    controlDic["AdvanceButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "关闭";
                     CloseShop<FixShopPanel>("Fix Shop", "FixShopButton");
                     UImanager.Instance.ShowPanel<AdvanceShopPanel>();//显示高级商店
                 }
@@ -90,13 +90,13 @@ public class televisionPanel : BasePanel
                 AnimatorControl_FixShop.SetAnimatorStart();
                 if (UImanager.Instance.GetPanel<FixShopPanel>())
                 {
-                    controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Fix Shop";
+                    controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "修复商店";
                     UImanager.Instance.HidePanel<FixShopPanel>();//隐藏高级商店
                     MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 }
                 else
                 {
-                    controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Close";
+                    controlDic["FixShopButton"].gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "关闭";
                     CloseShop<AdvanceShopPanel>("Advance Shop", "AdvanceButton");
                     UImanager.Instance.ShowPanel<FixShopPanel>();//显示高级商店
                 }
@@ -113,13 +113,19 @@ public class televisionPanel : BasePanel
                 break;
             case "FlipCardButton":
                 MusicManager.Instance.PlayEffectMusic("Music/点击", false);
-                if (Card.CurrentSelectedCard!=null)
-                    Card.CurrentSelectedCard.Flip();//进行翻转
+                if (Card.CurrentSelectedCard_1!=null)
+                    Card.CurrentSelectedCard_1.Flip();//进行翻转
+                if (Card.CurrentSelectedCard_2 != null)
+                    Card.CurrentSelectedCard_2.Flip();//进行翻转
                 break;
 
             case "FlipAllCardButton":
                 MusicManager.Instance.PlayEffectMusic("Music/点击", false);
                 StartCoroutine(FlipAllCard());
+                break;
+
+            case "FilpEnemyCardButton":
+                EnemyCard.CurrentEnemyCard.Filp();
                 break;
         }
 
@@ -210,9 +216,9 @@ public class televisionPanel : BasePanel
     protected override void Update()
     {
         base.Update();
-        if (Card.CurrentSelectedCard != null && controlDic["FlipCardButton"].gameObject.activeSelf == false)
+        if (Card.CurrentSelectedCard_1 != null && controlDic["FlipCardButton"].gameObject.activeSelf == false)
             SetCanShowCardFlip(true);
-        else if (Card.CurrentSelectedCard == null && controlDic["FlipCardButton"].gameObject.activeSelf == true)
+        else if (Card.CurrentSelectedCard_1 == null && controlDic["FlipCardButton"].gameObject.activeSelf == true)
             SetCanShowCardFlip(false);
     }
 

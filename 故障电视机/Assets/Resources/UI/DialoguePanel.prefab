@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -258,6 +258,9 @@ MonoBehaviour:
   promptText: {fileID: 1104073555859010755}
   promptFadeDuration: 1
   promptWaitDuration: 0.5
+  subCanvas: {fileID: 0}
+  graphicRaycaster: {fileID: 0}
+  mainCamera: {fileID: 0}
 --- !u!1 &3611668712093743533
 GameObject:
   m_ObjectHideFlags: 0

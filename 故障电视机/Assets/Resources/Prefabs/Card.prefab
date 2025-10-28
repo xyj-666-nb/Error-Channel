@@ -213,12 +213,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsChoose: 0
   IsAnimator: 0
-  BackGround: {fileID: 4061406864501941865}
+  CardFrond: {fileID: 4061406864501941865}
+  CardBack: {fileID: 4018857691913085584}
   MoveDistance: 0.6
   ScaleSize: 1.1
   AnimDuration: 0.7
   MyNumber: {fileID: 2385212710610311542}
   MyCanvas: {fileID: 7425596590410871672}
+  MyDesignMode: 0
 --- !u!61 &1577773826597071834
 BoxCollider2D:
   m_ObjectHideFlags: 0

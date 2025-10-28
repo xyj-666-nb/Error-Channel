@@ -46,6 +46,8 @@ public class FixProcess : MonoBehaviour
 
         // 开始新的更新协程
         updateCoroutine = StartCoroutine(UpdateProgress());
+        
+
     }
 
     IEnumerator UpdateProgress()
@@ -75,6 +77,12 @@ public class FixProcess : MonoBehaviour
 
         isUpdating = false;
         updateCoroutine = null;
+
+        if(currentValue==1)
+        {
+            //开启胜利对话！
+           Main.Instance.InitDia.StartDialogue(10);
+        }
     }
 
     // 重置进度

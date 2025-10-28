@@ -5,7 +5,14 @@ using DG.Tweening;
 using System.Collections;
 using System.Diagnostics.Contracts;
 using UnityEngine.Events;//引入dotween插件
-
+public enum GameLevel
+{
+    Level1,
+    Level2,
+    Level3,
+    Level4,
+    Level5
+}
 public enum PushType { Touch,track }//1.是玩家触摸，2.是预设轨迹
 public class HandCardManger : MonoBehaviour
 {
@@ -20,6 +27,8 @@ public class HandCardManger : MonoBehaviour
     [SerializeField]private SplineContainer SplineContainer_PushCard;//这里是打出卡牌的轨道
 
     [SerializeField]private Transform CardParent;//卡牌的父物体
+
+    private bool IsStart = true;
    private void Awake()
     {
         instance = this;
@@ -32,26 +41,43 @@ public class HandCardManger : MonoBehaviour
 
     public void InitCard()
     {
+        // 如果已经在初始化过程中，直接返回
+        if (IsInitializing) return;
+
         StartCoroutine(CreateInitCard());
     }
 
+    private bool IsInitializing = false;
+
     IEnumerator CreateInitCard()
     {
+        IsInitializing = true;
+
         AudioSource audioSource = null;
         //开启连续发牌
         MusicManager.Instance.PlayEffectMusic("Music/连续发牌", false, (resources) => { audioSource = resources; });
         yield return new WaitForSeconds(0.2f);
-        if(EnemyCard.CurrentEnemyCard==null)//为空才创建敌人卡牌
+
+        if (EnemyCard.CurrentEnemyCard == null)//为空才创建敌人卡牌
             GetEnemyCard();
+
         var HandCardCount = HandCardList.Count;
-        for (int i = 0; i < MaxHandCardCount- HandCardCount; i++)//直接补满手牌
+        for (int i = 0; i < MaxHandCardCount - HandCardCount; i++)//直接补满手牌
         {
             CreatCard();//创建手牌
             yield return new WaitForSeconds(0.2f);
         }
+
         MusicManager.Instance.StopEffectMusic(audioSource);//暂停
+
         //打开新手引导的对话
-        Main.Instance.InitDia.StartDialogue(1);//开启对话1
+        if (IsStart)
+        {
+            IsStart = false;
+            Main.Instance.InitDia.StartDialogue(1);//开启对话1
+        }
+
+        IsInitializing = false;
     }
 
     public void CreatCard()
@@ -71,11 +97,11 @@ public class HandCardManger : MonoBehaviour
 
     public void PushCard(PushType Type)
     {
-        if (Card.CurrentSelectedCard == null)
+        if (Card.CurrentSelectedCard_1 == null)
             return;
 
         // 缓存当前选中的卡牌
-        Card pushedCard = Card.CurrentSelectedCard;
+        Card pushedCard = Card.CurrentSelectedCard_1;
 
         switch (Type)
         {
@@ -89,7 +115,7 @@ public class HandCardManger : MonoBehaviour
         pushedCard.Push();// 标记卡牌已打出
         HandCardList.Remove(pushedCard.gameObject);
         UpdateCardPosition();
-        Card.CurrentSelectedCard = null;
+        Card.CurrentSelectedCard_1 = null;
     }
 
     public void PushPlayerCard(Card card,float _totalDuration,Card PushCard)
@@ -155,8 +181,8 @@ public class HandCardManger : MonoBehaviour
         if (HandCardList.Count <= 0)
             return;
 
-        if (Card.CurrentSelectedCard != null)//如果当前有选中的牌就直接归位
-            Card.CurrentSelectedCard.SetDeactivate();
+        if (Card.CurrentSelectedCard_1 != null)//如果当前有选中的牌就直接归位
+            Card.CurrentSelectedCard_1.SetDeactivate();
 
 
         // 计算每张卡牌在曲线上的位置（保持原有逻辑）

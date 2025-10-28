@@ -10,6 +10,7 @@ public class VoicevolumeButton : MonoBehaviour
 {
     private static VoicevolumeButton instance;
     public static VoicevolumeButton Instance=>instance;
+    private float LastValuue;
 
     [SerializeField] private Button me;
     [SerializeField] private float speed = 5;
@@ -48,6 +49,11 @@ public class VoicevolumeButton : MonoBehaviour
     private void Update()
     {
         HandleTouchInput();
+        if(PlayerManager.instance.FixVolume)
+        {
+            MusicManager.Instance.ChangeEffectVolume(GetNormalizedValue());
+            MusicManager.Instance.ChangeMusicVolume(GetNormalizedValue());
+        }
     }
 
     private void HandleTouchInput()
@@ -134,10 +140,12 @@ public class VoicevolumeButton : MonoBehaviour
             // 计算目标角度
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;//转化为角度
 
+
             // 平滑旋转到目标角度
             Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);//只转z轴
             promptImageObj.transform.rotation = Quaternion.Lerp(
             promptImageObj.transform.rotation, targetRotation, speed * Time.deltaTime);
+
         }
     }
 

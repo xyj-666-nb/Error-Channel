@@ -129,13 +129,23 @@ public class MusicManager : MonoBehaviour
     public void ChangeMusicVolume(float value)
     {
         bgmGlobalVolume = Mathf.Clamp01(value);
+
+        // 添加调试信息
+        Debug.Log($"Changing BGM volume to: {bgmGlobalVolume}, Current Audio: {CurrentAudioPath}");
+
         if (BKAudioSource != null && !string.IsNullOrEmpty(CurrentAudioPath))
         {
-            // 若当前音乐没有特定音量，则更新为全局音量
-            if (!specificBGMVolumes.ContainsKey(CurrentAudioPath))
-            {
-                BKAudioSource.volume = bgmGlobalVolume;
-            }
+            // 关键修改：总是重新计算最终音量
+            float finalVolume = specificBGMVolumes.TryGetValue(CurrentAudioPath, out float specificVol)
+                ? specificVol * bgmGlobalVolume  // 如果特定音量存在，将其与全局音量结合
+                : bgmGlobalVolume;               // 否则使用全局音量
+
+            BKAudioSource.volume = finalVolume;
+            Debug.Log($"Applied BGM volume: {finalVolume}");
+        }
+        else
+        {
+            Debug.LogWarning("BKAudioSource is null or no current audio path");
         }
     }
 
@@ -280,15 +290,21 @@ public class MusicManager : MonoBehaviour
     public void ChangeEffectVolume(float value)
     {
         effectGlobalVolume = Mathf.Clamp01(value);
+
+        Debug.Log($"Changing Effect volume to: {effectGlobalVolume}, Active effects: {EffectMusicLis.Count}");
+
         foreach (var audioSource in EffectMusicLis)
         {
-            if (audioSource != null)
+            if (audioSource != null && audioSource.clip != null)
             {
-                string clipName = audioSource.clip?.name;
-                if (clipName == null || !specificEffectVolumes.ContainsKey(clipName))
-                {
-                    audioSource.volume = effectGlobalVolume;
-                }
+                string clipName = audioSource.clip.name;
+                // 关键修改：总是重新计算最终音量
+                float finalVolume = specificEffectVolumes.TryGetValue(clipName, out float specificVol)
+                    ? specificVol * effectGlobalVolume  // 结合特定音量和全局音量
+                    : effectGlobalVolume;               // 使用全局音量
+
+                audioSource.volume = finalVolume;
+                Debug.Log($"Applied effect volume to {clipName}: {finalVolume}");
             }
         }
     }

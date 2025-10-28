@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Main : MonoBehaviour
 {
@@ -14,7 +15,6 @@ public class Main : MonoBehaviour
     private void Awake()
     {
         instance = this;
-
         // 先初始化所有的预制体
         foreach (var item in NeedInitPrefabs)
         {
@@ -25,6 +25,7 @@ public class Main : MonoBehaviour
 
     void Start()
     {
+        //CRTPostEffecter.instance.enabled = false;//失活屏幕效果！
         Debug.Log("Main Start 开始执行");
 
         // 确保 InitDia 不为空
@@ -43,9 +44,8 @@ public class Main : MonoBehaviour
         PlayerManager.instance.RefreshLevel();
 
         // 开始播放背景音乐
-        MusicManager.Instance.SetSpecificBGMVolume("Music/背景音乐", 0.05f);
+        MusicManager.Instance.SetSpecificBGMVolume("Music/背景音乐", 0.09f);
         MusicManager.Instance.PlayBKMusic("Music/背景音乐");
-
         // 延迟开始对话
         StartCoroutine(WaitTime());
     }
@@ -72,8 +72,46 @@ public class Main : MonoBehaviour
              TimeLineInstance1.Instance.OnDialogueEnd();//对话结束还原
         else if(segmentIndex == 4)
             TimeLineInstance1.Instance.OnDialogueEnd();//对话结束还原  
+        else if(segmentIndex == 8)
+        {
+            //开启屏幕损坏
+            CRTPostEffecter.instance.enabled = true;
+            TimeLineInstance1.Instance.OnDialogueEnd();//对话结束还原  
+        }
+        else if(segmentIndex == 10|| segmentIndex == 11)
+        {
+            //切换回开始场景
+            ChangeScence();
+        }
+    }
+    public void ChangeScence()
+    {
+        StartCoroutine(AsyncLoadScene("GameStartScence"));
     }
 
+    // 异步加载场景的协程
+    private IEnumerator AsyncLoadScene(string sceneName)
+    {
+        // 开始异步加载场景，第二个参数为加载模式（Single表示关闭当前场景加载新场景）
+        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+        // 禁止加载完成后自动激活场景（便于处理进度显示）
+        asyncOperation.allowSceneActivation = false;
+
+        // 循环等待加载完成
+        while (!asyncOperation.isDone)
+        {
+            // 异步加载的进度范围是0-1，但实际到0.9时就代表资源加载完成
+            float progress = Mathf.Clamp01(asyncOperation.progress / 0.9f);
+
+            // 当进度达到100%时，允许激活场景
+            if (progress >= 1.0f)
+            {
+                asyncOperation.allowSceneActivation = true;
+            }
+
+            yield return null; // 等待一帧
+        }
+    }
     IEnumerator waitTime_1()
     {
         yield return new WaitForSeconds(1);

@@ -49,5 +49,11 @@ public class TimeLineInstance1 : MonoBehaviour
         Main.Instance.InitDia.StartDialogue(4);//开启第五段的对话
     }
 
-
+    public void OnDialogTrigger_4()
+    {
+        timeline.Pause(); // 暂停Timeline
+        //开启第三段对话
+        Debug.Log("触发第5段对话");
+        Main.Instance.InitDia.StartDialogue(8);//开启第八段的对话
+    }
 }

@@ -10,10 +10,11 @@ public class FixShopPanel : BasePanel
     {
         base.Awake();
     }
+
     public override void ClickButton(string controlName)
     {
         base.ClickButton(controlName);
-        switch(controlName)
+        switch (controlName)
         {
             case "CorrectShowGetMoneyButton"://玩家胜利获取的金币
                 MusicManager.Instance.PlayEffectMusic("Music/点击", false);
@@ -137,14 +138,17 @@ public class FixShopPanel : BasePanel
     {
         base.Start();
         //更新零件数量的显示
-        controlDic["FixExitGameButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text =PlayerManager.instance.IsFixExitButton_NeedParts.ToString()+"P";
+        controlDic["FixExitGameButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.IsFixExitButton_NeedParts.ToString() + "P";
         controlDic["CorrectShowShopButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.IsFixShowGold_NeedPart.ToString() + "P";
         controlDic["CorrectShowGetFixAmountButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.StartShowPrompttext_PartneedPart.ToString() + "P";
         controlDic["CorrectShowGetMoneyButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.StartShowPrompttext_GoldneedPart.ToString() + "P";
+        controlDic["FixVolumeButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.FixVolumeNeedPart.ToString() + "P";
+        controlDic["FixTelevisionCatonButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.FixCcenceEffector_NeedPart.ToString() + "P";
+        controlDic["CountCorrectButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.FixShowPlayerHealthNeedPart.ToString() + "P";
         controlDic["CorrectShowFixAmountButton"].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = PlayerManager.instance.FixPart_NeedParts.ToString() + "P";
 
         //最开始进行判断是否失活按钮
-        if(PlayerManager.instance.IsObtainShowPart)//如果已经解锁了显示
+        if (PlayerManager.instance.IsObtainShowPart)//如果已经解锁了显示
             SetCompleteFxi("CorrectShowFixAmountButton");
         if (PlayerManager.instance.IsFixExitButton)//如果修复了退出按钮
             SetCompleteFxi("FixExitGameButton");
@@ -154,14 +158,15 @@ public class FixShopPanel : BasePanel
         {
             controlDic["CorrectShowGetMoneyButton"].GetComponent<Button>().interactable = false;
             controlDic["CorrectShowGetMoneyButton"].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "已修复";
-        };
+        }
+        ;
         if (PlayerManager.instance.IsStartShowPrompttext_part)
             SetCompleteFxi("CorrectShowGetFixAmountButton");
-        if(PlayerManager.instance.IsFixShowPlayerHealth)
+        if (PlayerManager.instance.IsFixShowPlayerHealth)
             SetCompleteFxi("CountCorrectButton");
-        if(PlayerManager.instance.FixCcenceEffector)
+        if (PlayerManager.instance.FixCcenceEffector)
             SetCompleteFxi("FixTelevisionCatonButton");
-        if(PlayerManager.instance.FixVolume)
+        if (PlayerManager.instance.FixVolume)
             SetCompleteFxi("FixVolumeButton");
     }
 }
