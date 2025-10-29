@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/GameStartScence.scene
+    guid: 314ec7cef3f87824a9969c3c0a9599f6
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.scene
+    guid: 3fc8acdd13e6c734bafef6554d6fdbcd
+  m_BuildProfiles: []
+  m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: daa0724d1bdda114986f2edd44f0a768, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 5074e62535c35f844a3440f98ba9c5a6, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 7470facf5e376a040bd940fab7a888a2, type: 3}
+  m_SlimFeaturesWeixinMiniGame:
+    AllocateOverhead: 1
+    DecompressASTC: 0
+    DecompressDXT: 1
+    DecompressETC: 1
+    FreeTypeSfntPng: 1
+    LightProbe: 2
+    UseStringInternPool: 2
